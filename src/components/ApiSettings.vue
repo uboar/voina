@@ -16,26 +16,25 @@
             <!--VOICEVOXの設定-->
             <div v-if="currentSettings.engine === 'voicevox'">
               <v-text-field v-model="currentSettings.voicevox.apiUrl" label="APIのURL"></v-text-field>
-              <v-select v-model.number="currentSettings.voicevox.speakerId" label="話者ID" :items="speakers"
-                item-title="text" item-value="value"></v-select>
               <v-row>
                 <v-col>
-                  <v-text-field label="デフォルトのピッチ" v-model.number="currentSettings.voicevox.defaultPitch">
-                  </v-text-field>
+                  <v-btn block color="light-green" class="mb-4" @click="getSpeakersData">
+                    話者一覧を取得
+                  </v-btn>
                 </v-col>
-                <v-col>
-                  <v-text-field label="デフォルトのイントネーション" v-model.number="currentSettings.voicevox.defaultIntonationScale">
-                  </v-text-field>
-                </v-col>
-                <v-col>
-                  <v-text-field label="デフォルトの話速" v-model.number="currentSettings.voicevox.defaultSpeed">
-                  </v-text-field>
+                <v-col>                  
+                  <v-btn block color="cyan" class="mb-4" @click="testSpeak">
+                    テスト発話
+                  </v-btn>
                 </v-col>
               </v-row>
+              <v-select v-model.number="currentSettings.voicevox.speakerId" label="話者ID" :items="speakers"
+                item-title="text" item-value="value"></v-select>
             </div>
             <!--民安☆TALKの設定-->
             <div v-else>
-              <v-text-field v-model="currentSettings.tamiyasu.path" variant="outlined" label="民安☆TALKのパス" @click="selectTamiyasuPath">
+              <v-text-field v-model="currentSettings.tamiyasu.path" variant="outlined" label="民安☆TALKのパス"
+                @click="selectTamiyasuPath">
               </v-text-field>
               <v-text-field v-model="currentSettings.tamiyasu.argument" label="追加引数"></v-text-field>
             </div>
@@ -48,6 +47,7 @@
           </v-card-actions>
         </v-card>
       </v-col>
+      <!--ECCEの設定-->
       <v-col>
         <v-card class="ma-2">
           <v-card-title class="text-indigo-lighten-1">
@@ -88,8 +88,9 @@
 </template>
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
-import { Settings } from '../scripts/interfaces'
+import { Settings, VoicevoxSpeakersSchema } from '../scripts/interfaces'
 import { open } from '@tauri-apps/api/dialog';
+import { getClient, Body, ResponseType } from '@tauri-apps/api/http'
 
 
 import speakers from '../assets/speakers.json'
@@ -123,7 +124,7 @@ export default defineComponent({
         before: "",
         after: ""
       },
-      speakers: speakers
+      speakers: [] as Array<{text: string, value: number}>,
     }
   },
   watch: {
@@ -153,6 +154,31 @@ export default defineComponent({
         ]
       });
       this.currentSettings.tamiyasu.path = selected as string;
+    },
+    getSpeakersData: async function() {
+      const client = await getClient();
+      const response = await client.get(`${this.currentSettings.voicevox.apiUrl}/speakers`);
+      const vvoxSpeakers = response.data as Array<VoicevoxSpeakersSchema>;
+
+      this.speakers = [];
+      vvoxSpeakers.forEach(speakersElem => {
+        speakersElem.styles.forEach(stylesElem => {
+          this.speakers.push({
+            text: `${stylesElem.id}:${speakersElem.name}(${stylesElem.name})`,
+            value: stylesElem.id
+          }) 
+        })
+      });
+    },
+    testSpeak: async function()
+    {
+      const client = await getClient();
+      
+      const audioQuery = await client.post(`${this.currentSettings.voicevox.apiUrl}/audio_query?text=${"テスト発話です。"}&speaker=${this.currentSettings.voicevox.speakerId}`) as any;
+      const synthesis = await client.post(`${this.currentSettings.voicevox.apiUrl}/synthesis?speaker=${this.currentSettings.voicevox.speakerId}`, Body.json(audioQuery.data), {
+        responseType: ResponseType.Binary //arrayだよ
+      });
+      new Audio(window.URL.createObjectURL(new Blob([Uint8Array.from(synthesis.data as Array<number>)]))).play();
     }
   }
 })

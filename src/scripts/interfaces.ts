@@ -24,3 +24,13 @@ export interface Settings {
     l3ReturnNum: Number
   }
 }
+
+export interface VoicevoxSpeakersSchema {
+  name: string
+  speaker_uuid: string
+  styles: Array<{
+    id: number
+    name: string
+  }>
+  version: string
+}
