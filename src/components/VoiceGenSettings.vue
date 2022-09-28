@@ -1,0 +1,258 @@
+<script setup lang="ts">
+import { Settings, VoicevoxSpeakersSchema } from '../scripts/interfaces';
+import { open } from '@tauri-apps/api/dialog';
+import { getClient, Body, ResponseType } from '@tauri-apps/api/http';
+import { onMounted, ref } from 'vue';
+import { computed } from '@vue/reactivity';
+import { Command } from '@tauri-apps/api/shell';
+
+import speakersInit from '../assets/speakers.json'
+import Ajv from 'ajv';
+
+/**
+ * Props
+ * -----------------------------------------------------------------------------------------
+ */
+interface Props {
+  modelValue: Settings
+}
+const props = defineProps<Props>();
+
+/**
+ * Emits
+ * -----------------------------------------------------------------------------------------
+ */
+interface Emits {
+  (e: 'update:modelValue', value: Settings): void
+  (e: 'notify', value: {
+    err: any
+    color: string
+    text: string
+  }): void
+}
+const emits = defineEmits<Emits>();
+
+/**
+ * Computed
+ * -----------------------------------------------------------------------------------------
+ */
+const currentSettings = computed({
+  get() {
+    return props.modelValue;
+  },
+  set(val: Settings) {
+    emits("update:modelValue", val);
+  },
+});
+
+/**
+ * Mounted
+ * -----------------------------------------------------------------------------------------
+ */
+const mounted = onMounted(() => {
+  URLValid.value.validate();
+});
+
+/**
+ * data
+ * -----------------------------------------------------------------------------------------
+ */
+
+/**
+ * 音声合成エンジンの種類
+ */
+const engines = [
+  {
+    text: "VOICEVOX API",
+    value: "voicevox",
+  },
+  {
+    text: "民安☆TALK",
+    value: "tamiyasu",
+  }
+]
+/**
+ * バリデーション系
+ */
+const ajv = new Ajv();
+const URLValid = ref<any>(null);
+/**
+ * VOICEVOXの話者データ(VOICEVOX APIから取得する)
+ */
+const speakers = ref<Array<{ text: string, value: number }>>(speakersInit);
+/**
+ * API待機中判定
+ */
+const waiting = ref(false);
+
+/**
+ * Methods
+ * -----------------------------------------------------------------------------------------
+ */
+
+/**
+ * 民安☆TALKのパスを選択する
+ */
+const selectTamiyasuPath = async function () {
+  try {
+    const selected = await open({
+      filters: [{
+        name: "exe file",
+        extensions: ['exe']
+      }]
+    });
+    currentSettings.value.tamiyasu.path = selected as string;
+  } catch (err) {
+    console.error(err);
+    emits("notify", { err: err, text: "エラーが発生しました : ", color: "error" });
+  }
+};
+
+/**
+ * VOICEVOX APIから話者データを取得して整形する
+ */
+const getSpeakersData = async function () {
+  waiting.value = true;
+  try {
+    const client = await getClient();
+    const response = await client.get(`${currentSettings.value.voicevox.apiURL}/speakers`);
+    const vvoxSpeakers = response.data as Array<VoicevoxSpeakersSchema>;
+
+    //話者一覧を初期化
+    speakers.value = [];
+
+    //取得した話者データを整形
+    vvoxSpeakers.forEach(speakersElem => {
+      speakersElem.styles.forEach(stylesElem => {
+        speakers.value.push({
+          text: `${stylesElem.id}:${speakersElem.name}(${stylesElem.name})`,
+          value: stylesElem.id
+        })
+      })
+    });
+  } catch (err) { //エラーメッセージの表示
+    console.error(err);
+    emits("notify", { err: err, text: "エラーが発生しました : ", color: "error" });
+  }
+  waiting.value = false;
+};
+
+/**
+ * VOICEVOX APIを使ってテキスト発話する
+ */
+const vvoxTestSpeak = async function () {
+  waiting.value = true;
+  try {
+    const apiURL = currentSettings.value.voicevox.apiURL;
+    const speakerId = currentSettings.value.voicevox.speakerId;
+
+    const client = await getClient();
+
+    //synthesis用のクエリを取得
+    const audioQuery = await client.post(`${apiURL}/audio_query?text=${"テスト発話です。"}&speaker=${speakerId}`) as any;
+    //音声合成の実行
+    const synthesis = await client.post(`${apiURL}/synthesis?speaker=${speakerId}`, Body.json(audioQuery.data), {
+      responseType: ResponseType.Binary //arrayだよ
+    });
+
+    //synthesisの音声データからURLを生成
+    const synthesisAudioURL = window.URL.createObjectURL(new Blob([Uint8Array.from(synthesis.data as Array<number>)]));
+
+    //音声データを再生
+    await new Audio(synthesisAudioURL).play();
+  } catch (err) {
+    console.error(err);
+    emits("notify", { err: err, text: "エラーが発生しました : ", color: "error" });
+  }
+  waiting.value = false;
+}
+
+/**
+ * 民安☆TALKを使ってテキスト発話する
+ */
+const tamiyasuTestSpeak = async function () {
+  waiting.value = true;
+  try {
+    const command = new Command("tamiyasu");
+    await command.spawn();
+    /**
+     * TODO:exec書く
+     */
+  } catch (err) {
+    console.error(err);
+    emits("notify", { err: err, text: "エラーが発生しました : ", color: "error" });
+  }
+  waiting.value = false;
+}
+
+</script>
+
+<template>
+  <v-container>
+    <v-select label="音声合成エンジンを選択" v-model="currentSettings.engine" :items="engines" item-title="text"
+      item-value="value"></v-select>
+    <v-divider class="mb-4"></v-divider>
+    <!-- VOICEVOXの設定 -->
+    <div v-if="currentSettings.engine === 'voicevox'">
+      <v-text-field v-model="currentSettings.voicevox.apiURL" label="APIのURL" ref="URLValid"
+        :rules="ajv.compile({ format: 'uri' })(currentSettings.voicevox.apiURL) ? undefined : ['URLを入力してください']">
+      </v-text-field>
+      <v-row>
+        <v-col>
+          <v-btn block color="light-green" class="mb-4" @click="getSpeakersData" :disabled="waiting">
+            <div v-if="waiting">
+              <v-progress-circular indeterminate></v-progress-circular>
+            </div>
+            <div v-else>話者一覧を取得</div>
+          </v-btn>
+        </v-col>
+        <v-col>
+          <v-btn block color="cyan" class="mb-4" @click="vvoxTestSpeak" :disabled="waiting">
+            <div v-if="waiting">
+              <v-progress-circular indeterminate></v-progress-circular>
+            </div>
+            <div v-else>テスト発話(音が出ます)</div>
+          </v-btn>
+        </v-col>
+      </v-row>
+      <v-autocomplete v-model.number="currentSettings.voicevox.speakerId" label="話者ID" :items="speakers"
+        item-title="text" item-value="value"></v-autocomplete>
+      <!-- 関連リンクの表示 -->
+      <v-card>
+        <v-card-title>
+          関連リンク
+        </v-card-title>
+        <v-card-text class="ml-8">
+          <ul>
+            <li><a :href="`${currentSettings.voicevox.apiURL}/docs`" target="_blank">VOICEVOX API リファレンス(ローカル)</a></li>
+          </ul>
+        </v-card-text>
+      </v-card>
+    </div>
+    <!-- 民安☆TALKの設定 -->
+    <div v-else>
+      <v-text-field v-model="currentSettings.tamiyasu.path" variant="outlined" label="民安☆TALKのパス"
+        @click="selectTamiyasuPath" :rules="currentSettings.tamiyasu.path !== '' ? undefined : ['パスの設定が必要です']">
+      </v-text-field>
+      <v-text-field v-model="currentSettings.tamiyasu.argument" label="追加引数"></v-text-field>
+      <v-btn block color="cyan" :disabled="waiting" @click="tamiyasuTestSpeak" class="mb-4">
+        <div v-if="waiting">
+          <v-progress-circular indeterminate></v-progress-circular>
+        </div>
+        <div v-else>
+          テスト発話
+        </div>
+      </v-btn><!-- 関連リンクの表示 -->
+      <v-card>
+        <v-card-title>
+          関連リンク
+        </v-card-title>
+        <v-card-text class="ml-8">
+          <ul>
+            <li><a href="" target="_blank">民安☆TALK</a></li>
+          </ul>
+        </v-card-text>
+      </v-card>
+    </div>
+  </v-container>
+</template>

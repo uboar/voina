@@ -1,3 +1,56 @@
+<script setup lang="ts">
+import { computed } from '@vue/reactivity';
+import { useTheme } from 'vuetify/lib/framework.mjs';
+
+/**
+ * Props
+ * -----------------------------------------------------------------------------------------
+ */
+interface Props {
+  modelValue: number
+};
+const props = withDefaults(defineProps<Props>(), {
+  modelValue: 0,
+});
+
+/**
+ * Emits
+ * -----------------------------------------------------------------------------------------
+ */
+interface Emits {
+  (e: 'update:modelValue', value: number): void;
+};
+const emits = defineEmits<Emits>();
+
+/**
+ * Computed
+ * -----------------------------------------------------------------------------------------
+ */
+const tabValue = computed({
+  get() {
+    return props.modelValue
+  },
+  set(value: number) {
+    emits('update:modelValue', value);
+  }
+});
+
+/**
+ * Data
+ * -----------------------------------------------------------------------------------------
+ */
+const theme = useTheme();
+
+/**
+ * Methods
+ * -----------------------------------------------------------------------------------------
+ */
+const toggleTheme = () => {
+  theme.global.name.value = theme.global.current.value.dark ? 'light' : 'dark'
+}
+
+</script>
+
 <template>
   <v-app-bar color="cyan">
     <v-app-bar-title>
@@ -20,40 +73,3 @@
     </template>
   </v-app-bar>
 </template>
-
-<script lang="ts">
-import { defineComponent } from 'vue'
-import { useTheme } from 'vuetify/lib/framework.mjs';
-
-export default defineComponent({
-  name: "navbar",
-  props: {
-    modelValue: {
-      type: Number,
-      default: 0,
-    }
-  },
-  setup() {
-    const theme = useTheme()
-    return {
-      theme
-    };
-  },
-  computed: {
-    tabValue: {
-      get(): Number {
-        return this.modelValue
-      },
-      set(val: Number) {
-        this.$emit('update:modelValue', val)
-      }
-    }
-  },
-  methods: {
-    toggleTheme() {
-      this.theme.global.name.value = this.theme.global.current.value.dark ? 'light' : 'dark'
-    }
-  }
-})
-
-</script>

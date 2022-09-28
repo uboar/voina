@@ -16,12 +16,25 @@
         "all": true
       },
       "shell": {
+        "all": true,
+        "scope": [
+          {
+            "name": "tamiyasu",
+            "cmd": "vrx",
+            "args": true
+          }
+        ]
+      },
+      "path": {
         "all": true
       },
-      "http":{
+      "http": {
         "all": true,
         "request": true,
-        "scope": ["https://**", "http://**"]
+        "scope": [
+          "https://**",
+          "http://**"
+        ]
       }
     },
     "bundle": {
