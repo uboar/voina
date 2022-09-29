@@ -1,47 +1,105 @@
-<template>
-  <v-container>
-    <h1>おしゃべりモード</h1>
-    <p>ブラウザの音声認識機能を使用して会話します。各APIの連投制限に注意して下さい。</p>
-    <v-divider class="my-4"></v-divider>
-    <v-textarea label="クエリ" placeholder="音声認識された文章がここに入力されます" v-model="query" :disabled="waiting" readonly></v-textarea>
-    <v-btn :color="recording ? 'gray' : 'info'" size="large" @click="toggleRecording" :disabled="waiting">
-      <div v-if="waiting">APIからの返答を待っています…
-        <v-progress-circular indeterminate></v-progress-circular>
-      </div>
-      <div v-else-if="recording">音声認識を停止</div>
-      <div v-else>音声認識を開始</div>
-    </v-btn>
-    <v-btn block color="primary" size="x-large" @click="sendQuery" :disabled="waiting">
-      <div v-if="waiting">
-        APIからの返答を待っています…
-        <v-progress-circular indeterminate></v-progress-circular>
-      </div>
-      <p v-else>送信</p>
-    </v-btn>
-  </v-container>
+<script setup lang="ts">
+import { ReplaceText, Settings } from '../scripts/interfaces';
+import { ref } from 'vue';
+import { computed } from '@vue/reactivity';
+import replaceText from '../scripts/replaceText';
+import { getECCE, insertHistory } from '../scripts/ecce';
+import { voicevoxSend } from '../scripts/voicevox'
 
-</template>
+/**
+ * Props
+ * -----------------------------------------------------------------------------------------
+ */
+interface Props {
+    settings: Settings
+    inputReplaceOption: Array<ReplaceText>
+    outputReplaceOption: Array<ReplaceText>
+};
+const props = defineProps<Props>();
 
-<script lang="ts">
-import { defineComponent } from 'vue';
+/**
+ * Emits
+ * -----------------------------------------------------------------------------------------
+ */
+interface Emits {
+    (e: 'notify', value: {
+        err?: any
+        color: string
+        text: string
+    }): void
+}
+const emits = defineEmits<Emits>();
 
-export default defineComponent({
-  name: "talkMode",
-  data() {
-    return {
-      query: "",
-      waiting: false,
-      recording: false,
+/**
+ * Computed
+ * -----------------------------------------------------------------------------------------
+ */
+const queryReplaced = computed(() => replaceText(queryText.value, props.inputReplaceOption));
+const responseECCEReplaced = computed(() => replaceText(responseECCEText.value, props.outputReplaceOption));
+
+
+/**
+ * Data
+ * -----------------------------------------------------------------------------------------
+ */
+const queryText = ref("");
+const responseECCEText = ref("");
+const waiting = ref(false);
+
+/**
+ * Methods
+ * -----------------------------------------------------------------------------------------
+ */
+const sendQuery = async (query: string) => {
+    waiting.value = true;
+    try {
+        const responseECCE = await getECCE(query, props.settings.ecce);
+        console.log(responseECCE);
+
+        //TODO : resultResponseText以外で帰ってきた返答候補を選択出来るようにする
+        responseECCEText.value = responseECCE.resultResponseText;
+        insertHistory(query, responseECCEText.value);
+        await voicevoxSend(responseECCEReplaced.value, props.settings.voicevox);
+    } catch (err) {
+        console.error(err);
+        emits("notify", { err: err, color: "error", text: "エラーが発生しました : " })
     }
-  },
-  methods: {
-    toggleRecording() {
-      this.recording = !this.recording;
-    },
-    sendQuery() {
-      this.waiting = true;
-    }
-  }
-});
+    waiting.value = false;
+}
 
 </script>
+
+<template>
+    <v-container>
+        <h1>おしゃべりする</h1>
+        <v-divider></v-divider>
+        <v-row class="mt-4">
+            <v-col>
+                <v-textarea color="primary" variant="solo" rows="7" no-resize label="送信クエリ" v-model="queryText">
+                </v-textarea>
+            </v-col>
+            <v-col>
+                <v-textarea disabled readonly no-resize rows="7" label="送信クエリ(置換後)" v-model="queryReplaced">
+                </v-textarea>
+            </v-col>
+        </v-row>
+        <v-divider class="my-2"></v-divider>
+        <v-btn block size="x-large" color="cyan" @click="sendQuery(queryReplaced)">
+            <div v-if="waiting">
+                <v-progress-circular indeterminate></v-progress-circular>
+            </div>
+            <div v-else>
+                クエリ手動送信
+            </div>
+        </v-btn>
+        <v-divider class="my-2"></v-divider>
+        <v-row>
+            <v-col>
+                <v-text-field v-model="responseECCEText" readonly label="ECCEからの返答" variant="outlined"></v-text-field>
+            </v-col>
+            <v-col>
+                <v-text-field v-model="responseECCEReplaced" disabled label="ECCEからの返答(置換後)" variant="outlined"></v-text-field>
+            </v-col>
+        </v-row>
+    </v-container>
+</template>

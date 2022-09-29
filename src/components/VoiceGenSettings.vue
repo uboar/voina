@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Settings, VoicevoxSpeakersSchema } from '../scripts/interfaces';
-import { open } from '@tauri-apps/api/dialog';
 import { getClient, Body, ResponseType } from '@tauri-apps/api/http';
 import { onMounted, ref } from 'vue';
 import { computed } from '@vue/reactivity';
@@ -91,24 +90,6 @@ const waiting = ref(false);
  */
 
 /**
- * 民安☆TALKのパスを選択する
- */
-const selectTamiyasuPath = async function () {
-  try {
-    const selected = await open({
-      filters: [{
-        name: "exe file",
-        extensions: ['exe']
-      }]
-    });
-    currentSettings.value.tamiyasu.path = selected as string;
-  } catch (err) {
-    console.error(err);
-    emits("notify", { err: err, text: "エラーが発生しました : ", color: "error" });
-  }
-};
-
-/**
  * VOICEVOX APIから話者データを取得して整形する
  */
 const getSpeakersData = async function () {
@@ -175,9 +156,6 @@ const tamiyasuTestSpeak = async function () {
   try {
     const command = new Command("tamiyasu");
     await command.spawn();
-    /**
-     * TODO:exec書く
-     */
   } catch (err) {
     console.error(err);
     emits("notify", { err: err, text: "エラーが発生しました : ", color: "error" });
@@ -231,9 +209,9 @@ const tamiyasuTestSpeak = async function () {
     </div>
     <!-- 民安☆TALKの設定 -->
     <div v-else>
-      <v-text-field v-model="currentSettings.tamiyasu.path" variant="outlined" label="民安☆TALKのパス"
-        @click="selectTamiyasuPath" :rules="currentSettings.tamiyasu.path !== '' ? undefined : ['パスの設定が必要です']">
-      </v-text-field>
+      <v-alert color="warning" variant="outlined" class="mb-4">
+        民安☆TALKが存在するフォルダをPATH(環境変数)に追加して下さい。
+      </v-alert>
       <v-text-field v-model="currentSettings.tamiyasu.argument" label="追加引数"></v-text-field>
       <v-btn block color="cyan" :disabled="waiting" @click="tamiyasuTestSpeak" class="mb-4">
         <div v-if="waiting">

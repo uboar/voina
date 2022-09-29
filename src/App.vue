@@ -4,10 +4,10 @@ import { Settings, ReplaceText } from './scripts/interfaces';
 
 import NavbarVue from './components/Navbar.vue';
 import VoiceGenSettingsVue from './components/VoiceGenSettings.vue';
-import ChatModeVue from './components/ChatMode.vue';
-import TalkModeVue from './components/TalkMode.vue';
 import ReplaceSettingsVue from './components/ReplaceSettings.vue';
 import ECCESettingsVue from './components/ECCESettings.vue';
+import TalkModeVue from './components/TalkMode.vue';
+import TalkMode from './components/TalkMode.vue';
 
 /**
  * data
@@ -136,13 +136,11 @@ const showErr = (err: any = "", message: string = "エラーが発生しまし�
             </v-window-item>
           </v-window>
         </v-window-item>
-        <!-- チャットモードタブ -->
+        <!-- おしゃべりタブ -->
         <v-window-item>
-          <chat-mode-vue :settings="settings"></chat-mode-vue>
-        </v-window-item>
-        <!-- おしゃべりモードタブ -->
-        <v-window-item>
-          <talk-mode-vue></talk-mode-vue>
+          <talk-mode :settings="settings" :input-replace-option="inputReplaceOptions"
+            :output-replace-option="outputReplaceOptions" @notify="(val) => {showErr(val.err, val.text, val.color)}">
+          </talk-mode>
         </v-window-item>
       </v-window>
       <v-snackbar v-model="statusMessage.show" :timeout="2000" :color="statusMessage.color">

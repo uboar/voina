@@ -67,8 +67,7 @@ const toggleTheme = () => {
     <template v-slot:extension>
       <v-tabs fixed-tabs align-with-title v-model="tabValue">
         <v-tab>設定</v-tab>
-        <v-tab>チャットモード</v-tab>
-        <v-tab>おしゃべりモード</v-tab>
+        <v-tab>おしゃべりする</v-tab>
       </v-tabs>
     </template>
   </v-app-bar>
