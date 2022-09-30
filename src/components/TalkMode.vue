@@ -1,17 +1,18 @@
 <script setup lang="ts">
-import { ReplaceText, Settings } from '../scripts/interfaces';
+import { ReplaceText, Config } from '../scripts/interfaces';
 import { ref } from 'vue';
 import { computed } from '@vue/reactivity';
 import replaceText from '../scripts/replaceText';
 import { getECCE, insertHistory } from '../scripts/ecce';
 import { voicevoxSend } from '../scripts/voicevox'
+import { tamiyasuSend } from '../scripts/tamiyasu';
 
 /**
  * Props
  * -----------------------------------------------------------------------------------------
  */
 interface Props {
-    settings: Settings
+    config: Config
     inputReplaceOption: Array<ReplaceText>
     outputReplaceOption: Array<ReplaceText>
 };
@@ -53,13 +54,20 @@ const waiting = ref(false);
 const sendQuery = async (query: string) => {
     waiting.value = true;
     try {
-        const responseECCE = await getECCE(query, props.settings.ecce);
+        const responseECCE = await getECCE(query, props.config.ecce);
         console.log(responseECCE);
 
         //TODO : resultResponseText以外で帰ってきた返答候補を選択出来るようにする
         responseECCEText.value = responseECCE.resultResponseText;
         insertHistory(query, responseECCEText.value);
-        await voicevoxSend(responseECCEReplaced.value, props.settings.voicevox);
+        switch (props.config.engine) {
+            case "voicevox":
+                await voicevoxSend(responseECCEReplaced.value, props.config.voicevox);
+                break;
+            case "tamiyasu":
+                tamiyasuSend(responseECCEReplaced.value, props.config.tamiyasu.argument)
+                break;
+        }
     } catch (err) {
         console.error(err);
         emits("notify", { err: err, color: "error", text: "エラーが発生しました : " })
@@ -98,7 +106,8 @@ const sendQuery = async (query: string) => {
                 <v-text-field v-model="responseECCEText" readonly label="ECCEからの返答" variant="outlined"></v-text-field>
             </v-col>
             <v-col>
-                <v-text-field v-model="responseECCEReplaced" disabled label="ECCEからの返答(置換後)" variant="outlined"></v-text-field>
+                <v-text-field v-model="responseECCEReplaced" disabled label="ECCEからの返答(置換後)" variant="outlined">
+                </v-text-field>
             </v-col>
         </v-row>
     </v-container>

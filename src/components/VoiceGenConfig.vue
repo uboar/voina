@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { Settings, VoicevoxSpeakersSchema } from '../scripts/interfaces';
+import { Config, VoicevoxSpeakersSchema } from '../scripts/interfaces';
 import { getClient, Body, ResponseType } from '@tauri-apps/api/http';
-import { onMounted, ref } from 'vue';
+import { ref } from 'vue';
 import { computed } from '@vue/reactivity';
 import { Command } from '@tauri-apps/api/shell';
-
+import { tamiyasuSend } from '../scripts/tamiyasu';
 import speakersInit from '../assets/speakers.json'
 import Ajv from 'ajv';
 
@@ -13,7 +13,7 @@ import Ajv from 'ajv';
  * -----------------------------------------------------------------------------------------
  */
 interface Props {
-  modelValue: Settings
+  modelValue: Config
 }
 const props = defineProps<Props>();
 
@@ -22,7 +22,7 @@ const props = defineProps<Props>();
  * -----------------------------------------------------------------------------------------
  */
 interface Emits {
-  (e: 'update:modelValue', value: Settings): void
+  (e: 'update:modelValue', value: Config): void
   (e: 'notify', value: {
     err: any
     color: string
@@ -35,21 +35,13 @@ const emits = defineEmits<Emits>();
  * Computed
  * -----------------------------------------------------------------------------------------
  */
-const currentSettings = computed({
+const currentConfig = computed({
   get() {
     return props.modelValue;
   },
-  set(val: Settings) {
+  set(val: Config) {
     emits("update:modelValue", val);
   },
-});
-
-/**
- * Mounted
- * -----------------------------------------------------------------------------------------
- */
-const mounted = onMounted(() => {
-  URLValid.value.validate();
 });
 
 /**
@@ -96,7 +88,7 @@ const getSpeakersData = async function () {
   waiting.value = true;
   try {
     const client = await getClient();
-    const response = await client.get(`${currentSettings.value.voicevox.apiURL}/speakers`);
+    const response = await client.get(`${currentConfig.value.voicevox.apiURL}/speakers`);
     const vvoxSpeakers = response.data as Array<VoicevoxSpeakersSchema>;
 
     //話者一覧を初期化
@@ -124,8 +116,8 @@ const getSpeakersData = async function () {
 const vvoxTestSpeak = async function () {
   waiting.value = true;
   try {
-    const apiURL = currentSettings.value.voicevox.apiURL;
-    const speakerId = currentSettings.value.voicevox.speakerId;
+    const apiURL = currentConfig.value.voicevox.apiURL;
+    const speakerId = currentConfig.value.voicevox.speakerId;
 
     const client = await getClient();
 
@@ -154,8 +146,7 @@ const vvoxTestSpeak = async function () {
 const tamiyasuTestSpeak = async function () {
   waiting.value = true;
   try {
-    const command = new Command("tamiyasu");
-    await command.spawn();
+    await tamiyasuSend("テスト発話です", props.modelValue.tamiyasu.argument);
   } catch (err) {
     console.error(err);
     emits("notify", { err: err, text: "エラーが発生しました : ", color: "error" });
@@ -167,13 +158,13 @@ const tamiyasuTestSpeak = async function () {
 
 <template>
   <v-container>
-    <v-select label="音声合成エンジンを選択" v-model="currentSettings.engine" :items="engines" item-title="text"
+    <v-select label="音声合成エンジンを選択" v-model="currentConfig.engine" :items="engines" item-title="text"
       item-value="value"></v-select>
     <v-divider class="mb-4"></v-divider>
     <!-- VOICEVOXの設定 -->
-    <div v-if="currentSettings.engine === 'voicevox'">
-      <v-text-field v-model="currentSettings.voicevox.apiURL" label="APIのURL" ref="URLValid"
-        :rules="ajv.compile({ format: 'uri' })(currentSettings.voicevox.apiURL) ? undefined : ['URLを入力してください']">
+    <div v-if="currentConfig.engine === 'voicevox'">
+      <v-text-field v-model="currentConfig.voicevox.apiURL" label="APIのURL" ref="URLValid"
+        :rules="ajv.compile({ format: 'uri' })(currentConfig.voicevox.apiURL) ? undefined : ['URLを入力してください']">
       </v-text-field>
       <v-row>
         <v-col>
@@ -193,7 +184,7 @@ const tamiyasuTestSpeak = async function () {
           </v-btn>
         </v-col>
       </v-row>
-      <v-autocomplete v-model.number="currentSettings.voicevox.speakerId" label="話者ID" :items="speakers"
+      <v-autocomplete v-model.number="currentConfig.voicevox.speakerId" label="話者ID" :items="speakers"
         item-title="text" item-value="value"></v-autocomplete>
       <!-- 関連リンクの表示 -->
       <v-card>
@@ -202,7 +193,7 @@ const tamiyasuTestSpeak = async function () {
         </v-card-title>
         <v-card-text class="ml-8">
           <ul>
-            <li><a :href="`${currentSettings.voicevox.apiURL}/docs`" target="_blank">VOICEVOX API リファレンス(ローカル)</a></li>
+            <li><a :href="`${currentConfig.voicevox.apiURL}/docs`" target="_blank">VOICEVOX API リファレンス(ローカル)</a></li>
           </ul>
         </v-card-text>
       </v-card>
@@ -212,7 +203,7 @@ const tamiyasuTestSpeak = async function () {
       <v-alert color="warning" variant="outlined" class="mb-4">
         民安☆TALKが存在するフォルダをPATH(環境変数)に追加して下さい。
       </v-alert>
-      <v-text-field v-model="currentSettings.tamiyasu.argument" label="追加引数"></v-text-field>
+      <v-text-field v-model="currentConfig.tamiyasu.argument" label="追加引数"></v-text-field>
       <v-btn block color="cyan" :disabled="waiting" @click="tamiyasuTestSpeak" class="mb-4">
         <div v-if="waiting">
           <v-progress-circular indeterminate></v-progress-circular>

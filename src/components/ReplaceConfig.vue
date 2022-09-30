@@ -25,7 +25,7 @@ const emits = defineEmits<Emits>();
  * Computed
  * -----------------------------------------------------------------------------------------
  */
-const currentSettings = computed({
+const currentConfig = computed({
     get() {
         return props.modelValue;
     },
@@ -58,14 +58,14 @@ const add = ref<ReplaceText>({
  */
 const deleteReplaceItem = (index: number) => {
     console.log(index);
-    currentSettings.value.splice(index, 1);
+    currentConfig.value.splice(index, 1);
 };
 
 /**
  * 置き換えアイテムの追加
  */
 const addReplaceItem = () => {
-    currentSettings.value.push({ ...add.value })
+    currentConfig.value.push({ ...add.value })
     add.value.before = "";
     add.value.after = "";
 };
@@ -74,10 +74,10 @@ const addReplaceItem = () => {
  * 入れ替え系メソッド
  */
 const swap = (target: number, source: number) => {
-    const buff = [...currentSettings.value];
-    [buff[target], buff[source]] = [currentSettings.value[source], currentSettings.value[target]];
+    const buff = [...currentConfig.value];
+    [buff[target], buff[source]] = [currentConfig.value[source], currentConfig.value[target]];
 
-    currentSettings.value = [...buff];
+    currentConfig.value = [...buff];
 }
 
 </script>
@@ -92,7 +92,7 @@ const swap = (target: number, source: number) => {
             </tr>
         </thead>
         <tbody>
-            <tr v-for="(item, index) in currentSettings">
+            <tr v-for="(item, index) in currentConfig">
                 <td>
                     <v-text-field variant="outlined" v-model="item.before" class="mt-3 mb-n2"></v-text-field>
                 </td>
@@ -105,7 +105,7 @@ const swap = (target: number, source: number) => {
                         <v-tooltip activator="parent" location="top">上と入れ替え</v-tooltip>
                     </v-btn>
                     <v-btn icon variant="outlined" @click="swap(index, index + 1)" class="mx-2"
-                        :disabled="index === currentSettings.length - 1">
+                        :disabled="index === currentConfig.length - 1">
                         <v-icon>mdi-arrow-down</v-icon>
                         <v-tooltip activator="parent" location="top">下と入れ替え</v-tooltip>
                     </v-btn>

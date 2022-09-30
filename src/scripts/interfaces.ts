@@ -3,7 +3,7 @@ export interface ReplaceText {
   after: string
 }
 
-export interface Settings {
+export interface Config {
   engine: string
   tamiyasu: {
     path: string
@@ -11,11 +11,7 @@ export interface Settings {
   }
   voicevox: {
     apiURL: string
-    apiKey: string
     speakerId: number
-    defaultPitch: number
-    defaultIntonationScale: number
-    defaultSpeed: number
   }
   ecce: {
     subscriptionKey: string

@@ -1,15 +1,15 @@
 import { getClient, Body, ResponseType } from '@tauri-apps/api/http';
-import { Settings } from './interfaces';
+import { Config } from './interfaces';
 
 
-export const voicevoxSend = async (text: string, settings: Settings["voicevox"]) => {
+export const voicevoxSend = async (text: string, config: Config["voicevox"]) => {
     const client = await getClient();
 
     //synthesis用のクエリを取得
-    const audioQuery = await client.post(`${settings.apiURL}/audio_query?text=${text}&speaker=${settings.speakerId}`) as any;
+    const audioQuery = await client.post(`${config.apiURL}/audio_query?text=${text}&speaker=${config.speakerId}`) as any;
     //音声合成の実行
     console.log(audioQuery.data);
-    const synthesis = await client.post(`${settings.apiURL}/synthesis?speaker=${settings.speakerId}`, Body.json(audioQuery.data), {
+    const synthesis = await client.post(`${config.apiURL}/synthesis?speaker=${config.speakerId}`, Body.json(audioQuery.data), {
         responseType: ResponseType.Binary //arrayだよ
     });
 

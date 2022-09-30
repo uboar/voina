@@ -32,15 +32,15 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue';
-import { Settings, ReplaceText } from '../scripts/interfaces';
+import { Config, ReplaceText } from '../scripts/interfaces';
 import axios from 'axios';
 import { stringify } from 'querystring';
 
 export default defineComponent({
     name: "voECCEConnector",
     props: {
-        settings: {
-            type: Object as PropType<Settings>,
+        config: {
+            type: Object as PropType<Config>,
             required: true
         }
     },
@@ -58,7 +58,7 @@ export default defineComponent({
     },
     methods: {
         genECCE: async function (query: string) {
-            const requestQueryText = this.textReplace(query, this.settings.input.replaceOptions)
+            const requestQueryText = this.textReplace(query, this.config.input.replaceOptions)
             console.log(requestQueryText);
             const requestBody = {
                 "knowledgePath": "ECCE_Sample.txt",

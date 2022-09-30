@@ -1,5 +1,5 @@
 import { getClient, Body, ResponseType } from '@tauri-apps/api/http';
-import { ECCERequestSchema, ECCEResponseSchema, Settings } from './interfaces';
+import { ECCERequestSchema, ECCEResponseSchema, Config } from './interfaces';
 import _ from 'lodash';
 
 let dialogHistory = ["", "", "", ""];
@@ -10,7 +10,7 @@ let dialogHistory = ["", "", "", ""];
  * @param ecceSetttings 
  * @returns 
  */
-export const getECCE = async (query: string, ecceSetttings: Settings["ecce"]): Promise<ECCEResponseSchema> => {
+export const getECCE = async (query: string, ecceSetttings: Config["ecce"]): Promise<ECCEResponseSchema> => {
     if (ecceSetttings.subscriptionKey === "") throw "サブスクリプションキーが設定されていません。"
     const requestBody: ECCERequestSchema = {
         knowledgePath: ecceSetttings.knowledgePath,
@@ -47,6 +47,7 @@ export const deleteHisory = () => {
  * @param response 
  */
 export const insertHistory = (request: string, response: string) => {
+    if(!response) return;
     dialogHistory[0] = _.cloneDeep(dialogHistory[2]);
     dialogHistory[1] = _.cloneDeep(dialogHistory[3]);
     dialogHistory[2] = request;

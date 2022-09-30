@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { computed } from '@vue/reactivity';
-import { Settings, ECCERequestSchema, ECCEResponseSchema } from '../scripts/interfaces';
+import { Config, ECCERequestSchema, ECCEResponseSchema } from '../scripts/interfaces';
 import { getClient, Body, ResponseType } from '@tauri-apps/api/http';
 
 /**
@@ -9,7 +9,7 @@ import { getClient, Body, ResponseType } from '@tauri-apps/api/http';
  * -----------------------------------------------------------------------------------------
  */
 interface Props {
-  modelValue: Settings
+  modelValue: Config
 }
 const props = defineProps<Props>();
 
@@ -18,7 +18,7 @@ const props = defineProps<Props>();
  * -----------------------------------------------------------------------------------------
  */
 interface Emits {
-  (e: 'update:modelValue', value: Settings): void
+  (e: 'update:modelValue', value: Config): void
   (e: 'notify', value: {
     err?: any
     color: string
@@ -31,11 +31,11 @@ const emits = defineEmits<Emits>();
  * Computed
  * -----------------------------------------------------------------------------------------
  */
-const currentSettings = computed({
+const currentConfig = computed({
   get() {
     return props.modelValue;
   },
-  set(val: Settings) {
+  set(val: Config) {
     emits("update:modelValue", val);
   },
 });
@@ -80,7 +80,7 @@ const keyShow = ref(false);
 const ECCETest = async function () {
   waiting.value = true;
   try {
-    const ecceSetttings = currentSettings.value.ecce;
+    const ecceSetttings = currentConfig.value.ecce;
     const requestBody: ECCERequestSchema = {
       knowledgePath: ecceSetttings.knowledgePath,
       query: "これはテストなんですが、調子はいかが？",
@@ -117,8 +117,8 @@ const ECCETest = async function () {
     <v-row>
       <v-col>
         <v-text-field variant="outlined" :type="keyShow ? 'text' : 'password'" label="subscription Key"
-          placeholder="ECCEのsubscription Keyを入力" v-model="currentSettings.ecce.subscriptionKey"
-          :rules="currentSettings.ecce.subscriptionKey !== '' ? undefined : ['subscription Keyを入力してください']"
+          placeholder="ECCEのsubscription Keyを入力" v-model="currentConfig.ecce.subscriptionKey"
+          :rules="currentConfig.ecce.subscriptionKey !== '' ? undefined : ['subscription Keyを入力してください']"
           ref="subKeyValid">
         </v-text-field>
       </v-col>
@@ -127,16 +127,16 @@ const ECCETest = async function () {
         <v-btn icon="mdi-eye-outline" v-else @mousedown="keyShow = true" variant="outlined"></v-btn>
       </v-col>
     </v-row>
-    <v-text-field label="知識データのファイルパス" placeholder="knowledgePath" v-model="currentSettings.ecce.knowledgePath">
+    <v-text-field label="知識データのファイルパス(現時点ではデフォルト値以外未対応)" disabled placeholder="knowledgePath" v-model="currentConfig.ecce.knowledgePath">
     </v-text-field>
     <v-row>
       <v-col>
         <v-text-field type="number" label="l2の返却件数" placeholder="l2ReturnNum"
-          v-model.number="currentSettings.ecce.l2ReturnNum"></v-text-field>
+          v-model.number="currentConfig.ecce.l2ReturnNum"></v-text-field>
       </v-col>
       <v-col>
         <v-text-field type="number" label="l3の返却件数" placeholder="l3ReturnNum"
-          v-model.number="currentSettings.ecce.l3ReturnNum">
+          v-model.number="currentConfig.ecce.l3ReturnNum">
         </v-text-field>
       </v-col>
     </v-row>

@@ -1,43 +1,38 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { Settings, ReplaceText } from './scripts/interfaces';
+import { onMounted, ref, watch } from 'vue';
+import { Config, ReplaceText } from './scripts/interfaces';
+import { loadConfig, initialConfig, writeConfig } from './scripts/configLoader'
 
 import NavbarVue from './components/Navbar.vue';
-import VoiceGenSettingsVue from './components/VoiceGenSettings.vue';
-import ReplaceSettingsVue from './components/ReplaceSettings.vue';
-import ECCESettingsVue from './components/ECCESettings.vue';
+import VoiceGenConfigVue from './components/VoiceGenConfig.vue';
+import ReplaceConfigVue from './components/ReplaceConfig.vue';
+import ECCEConfigVue from './components/ECCEConfig.vue';
 import TalkModeVue from './components/TalkMode.vue';
-import TalkMode from './components/TalkMode.vue';
 
 /**
- * data
+ * Mounted
+ * -----------------------------------------------------------------------------------------
+ */
+const mounted = onMounted(async () => {
+  try {
+    config.value = await loadConfig();
+  } catch (err) {
+    showErr(err, "コンフィグファイルの読み込みでエラーが発生しました : ", "error");
+  }
+});
+
+/**
+ * Data
  * -----------------------------------------------------------------------------------------
  */
 
 /**
  * アプリ設定
  */
-const settings = ref<Settings>({
-  engine: "voicevox",
-  tamiyasu: {
-    path: "",
-    argument: "",
-  },
-  voicevox: {
-    apiURL: "http://localhost:50021",
-    apiKey: "",
-    speakerId: 8,
-    defaultPitch: 1.0,
-    defaultIntonationScale: 1.0,
-    defaultSpeed: 1.0
-  },
-  ecce: {
-    subscriptionKey: "",
-    knowledgePath: "ECCE_Sample.txt",
-    l2ReturnNum: 3,
-    l3ReturnNum: 1,
-  },
+const config = ref<Config>({
+  ...initialConfig
 });
+
 /**
  * 入力テキスト置き換え設定
  */
@@ -67,7 +62,7 @@ const tabs = ref(0);
 /**
  * 設定タブ選択
  */
-const settingsTab = ref(0);
+const configTab = ref(0);
 /**
  * 下部に表示するステータスメッセージ
  */
@@ -89,6 +84,14 @@ const showErr = (err: any = "", message: string = "エラーが発生しまし�
  * Methods
  * -----------------------------------------------------------------------------------------
  */
+const saveConfig = () => {
+  try {
+    writeConfig(config.value);
+  } catch (err) {
+    showErr(err, "コンフィグファイルの読み込みでエラーが発生しました : ", "error");
+  }
+}
+
 
 </script>
 
@@ -100,30 +103,30 @@ const showErr = (err: any = "", message: string = "エラーが発生しまし�
         <!-- 設定タブ -->
         <v-window-item>
           <v-container>
-            <v-tabs v-model="settingsTab">
+            <v-tabs v-model="configTab">
               <v-tab>音声合成エンジン設定</v-tab>
               <v-tab>ECCE設定</v-tab>
               <v-tab>入力テキスト置き換え設定</v-tab>
               <v-tab>出力テキスト置き換え設定</v-tab>
             </v-tabs>
           </v-container>
-          <v-window v-model="settingsTab">
+          <v-window v-model="configTab">
             <!-- 音声合成エンジン設定タブ -->
             <v-window-item>
-              <voice-gen-settings-vue v-model="settings" @notify="(val) => {showErr(val.err, val.text, val.color)}">
-              </voice-gen-settings-vue>
+              <voice-gen-config-vue v-model="config" @notify="(val) => {showErr(val.err, val.text, val.color)}">
+              </voice-gen-config-vue>
             </v-window-item>
             <!-- ECCE設定タブ -->
             <v-window-item>
-              <e-c-c-e-settings-vue v-model="settings" @notify="(val) => {showErr(val.err, val.text, val.color)}">
-              </e-c-c-e-settings-vue>
+              <e-c-c-e-config-vue v-model="config" @notify="(val) => {showErr(val.err, val.text, val.color)}">
+              </e-c-c-e-config-vue>
             </v-window-item>
             <!-- 入力テキスト設定タブ -->
             <v-window-item>
               <v-container>
                 <h1>入力テキスト置き換え設定</h1>
                 <p class="mb-4">ECCEに入力するテキストの置き換え設定を行います。上に行くほど優先順位が高くなります。</p>
-                <replace-settings-vue v-model="inputReplaceOptions"></replace-settings-vue>
+                <replace-config-vue v-model="inputReplaceOptions"></replace-config-vue>
               </v-container>
             </v-window-item>
             <!-- 出力テキスト設定タブ -->
@@ -131,16 +134,20 @@ const showErr = (err: any = "", message: string = "エラーが発生しまし�
               <v-container>
                 <h1>出力テキスト置き換え設定</h1>
                 <p class="mb-4">ECCEから出力される(VOICEVOXに入力する)テキストの置き換え設定を行います。上に行くほど優先順位が高くなります。</p>
-                <replace-settings-vue v-model="outputReplaceOptions"></replace-settings-vue>
+                <replace-config-vue v-model="outputReplaceOptions"></replace-config-vue>
               </v-container>
             </v-window-item>
           </v-window>
+          <v-footer style="position: fixed; bottom: 0; width: 100%;">
+            <v-spacer></v-spacer>
+            <v-btn @click="saveConfig" variant="text">コンフィグファイルを上書き</v-btn>
+          </v-footer>
         </v-window-item>
         <!-- おしゃべりタブ -->
         <v-window-item>
-          <talk-mode :settings="settings" :input-replace-option="inputReplaceOptions"
+          <talk-mode-vue :config="config" :input-replace-option="inputReplaceOptions"
             :output-replace-option="outputReplaceOptions" @notify="(val) => {showErr(val.err, val.text, val.color)}">
-          </talk-mode>
+          </talk-mode-vue>
         </v-window-item>
       </v-window>
       <v-snackbar v-model="statusMessage.show" :timeout="2000" :color="statusMessage.color">

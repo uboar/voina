@@ -12,9 +12,6 @@
   },
   "tauri": {
     "allowlist": {
-      "dialog": {
-        "all": true
-      },
       "shell": {
         "all": true,
         "scope": [
@@ -27,6 +24,13 @@
       },
       "path": {
         "all": true
+      },
+      "fs": {
+        "readFile": true,
+        "readDir": true,
+        "exists": true,
+        "writeFile": true,
+        "scope": ["$APP/*", "$RESOURCE/*"]
       },
       "http": {
         "all": true,
