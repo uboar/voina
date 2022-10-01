@@ -19,6 +19,8 @@ export interface Config {
     l2ReturnNum: number
     l3ReturnNum: number
   }
+  inputReplaceText: Array<ReplaceText>
+  outputReplaceText: Array<ReplaceText>
 }
 
 export interface VoicevoxSpeakersSchema {

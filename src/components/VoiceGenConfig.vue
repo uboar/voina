@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { Config, VoicevoxSpeakersSchema } from '../scripts/interfaces';
-import { getClient, Body, ResponseType } from '@tauri-apps/api/http';
+import { Config } from '../scripts/interfaces';
 import { ref } from 'vue';
 import { computed } from '@vue/reactivity';
-import { Command } from '@tauri-apps/api/shell';
 import { tamiyasuSend } from '../scripts/tamiyasu';
+import { voicevoxGetSpeakers, voicevoxSend } from '../scripts/voicevox';
 import speakersInit from '../assets/speakers.json'
 import Ajv from 'ajv';
 
@@ -58,7 +57,7 @@ const engines = [
     value: "voicevox",
   },
   {
-    text: "民安☆TALK",
+    text: "民安☆TALK(Windows版のみ)",
     value: "tamiyasu",
   }
 ]
@@ -87,22 +86,7 @@ const waiting = ref(false);
 const getSpeakersData = async function () {
   waiting.value = true;
   try {
-    const client = await getClient();
-    const response = await client.get(`${currentConfig.value.voicevox.apiURL}/speakers`);
-    const vvoxSpeakers = response.data as Array<VoicevoxSpeakersSchema>;
-
-    //話者一覧を初期化
-    speakers.value = [];
-
-    //取得した話者データを整形
-    vvoxSpeakers.forEach(speakersElem => {
-      speakersElem.styles.forEach(stylesElem => {
-        speakers.value.push({
-          text: `${stylesElem.id}:${speakersElem.name}(${stylesElem.name})`,
-          value: stylesElem.id
-        })
-      })
-    });
+    speakers.value = await voicevoxGetSpeakers(props.modelValue.voicevox);
   } catch (err) { //エラーメッセージの表示
     console.error(err);
     emits("notify", { err: err, text: "エラーが発生しました : ", color: "error" });
@@ -116,23 +100,7 @@ const getSpeakersData = async function () {
 const vvoxTestSpeak = async function () {
   waiting.value = true;
   try {
-    const apiURL = currentConfig.value.voicevox.apiURL;
-    const speakerId = currentConfig.value.voicevox.speakerId;
-
-    const client = await getClient();
-
-    //synthesis用のクエリを取得
-    const audioQuery = await client.post(`${apiURL}/audio_query?text=${"テスト発話です。"}&speaker=${speakerId}`) as any;
-    //音声合成の実行
-    const synthesis = await client.post(`${apiURL}/synthesis?speaker=${speakerId}`, Body.json(audioQuery.data), {
-      responseType: ResponseType.Binary //arrayだよ
-    });
-
-    //synthesisの音声データからURLを生成
-    const synthesisAudioURL = window.URL.createObjectURL(new Blob([Uint8Array.from(synthesis.data as Array<number>)]));
-
-    //音声データを再生
-    await new Audio(synthesisAudioURL).play();
+    await voicevoxSend("テスト発話です。", props.modelValue.voicevox);
   } catch (err) {
     console.error(err);
     emits("notify", { err: err, text: "エラーが発生しました : ", color: "error" });

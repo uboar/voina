@@ -19,6 +19,22 @@ export const initialConfig: Config = {
         l2ReturnNum: 3,
         l3ReturnNum: 1,
     },
+    inputReplaceText: [
+        {
+            before: "〈わたし〉",
+            after: "あーし"
+        },
+        {
+            before: "〈あなた〉",
+            after: "マスター"
+        }
+    ],
+    outputReplaceText: [
+        {
+            before: "つむぎ",
+            after: "君",
+        }
+    ]
 };
 
 export const loadConfig = async (): Promise<Config> => {
@@ -39,6 +55,6 @@ export const writeConfig = async (config: Config) => {
         await writeTextFile('config.json', JSON.stringify(config), { dir: BaseDirectory.Resource });
         console.info("コンフィグファイルを上書きしました");
     } else {
-        throw "コンフィグファイルが見つかりません"
+        throw "コンフィグファイルが見つかりません";
     }
 }

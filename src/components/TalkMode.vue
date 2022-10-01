@@ -3,7 +3,7 @@ import { ReplaceText, Config } from '../scripts/interfaces';
 import { ref } from 'vue';
 import { computed } from '@vue/reactivity';
 import replaceText from '../scripts/replaceText';
-import { getECCE, insertHistory } from '../scripts/ecce';
+import { getECCE, insertHistory, deleteHisory } from '../scripts/ecce';
 import { voicevoxSend } from '../scripts/voicevox'
 import { tamiyasuSend } from '../scripts/tamiyasu';
 
@@ -13,8 +13,6 @@ import { tamiyasuSend } from '../scripts/tamiyasu';
  */
 interface Props {
     config: Config
-    inputReplaceOption: Array<ReplaceText>
-    outputReplaceOption: Array<ReplaceText>
 };
 const props = defineProps<Props>();
 
@@ -35,23 +33,35 @@ const emits = defineEmits<Emits>();
  * Computed
  * -----------------------------------------------------------------------------------------
  */
-const queryReplaced = computed(() => replaceText(queryText.value, props.inputReplaceOption));
-const responseECCEReplaced = computed(() => replaceText(responseECCEText.value, props.outputReplaceOption));
+const queryReplaced = computed(() => replaceText(queryText.value, props.config.inputReplaceText));
+const responseECCEReplaced = computed(() => replaceText(responseECCEText.value, props.config.outputReplaceText));
 
 
 /**
  * Data
  * -----------------------------------------------------------------------------------------
  */
+
+const speech = new window.webkitSpeechRecognition();
 const queryText = ref("");
+const recording = ref(false);
 const responseECCEText = ref("");
 const waiting = ref(false);
+const autoSend = ref(true);
+const autoDeleteQuery = ref(true);
+const disbleInsertHistory = ref(false);
 
 /**
  * Methods
  * -----------------------------------------------------------------------------------------
  */
+
+/**
+ * クエリを送付
+ * @param query 
+ */
 const sendQuery = async (query: string) => {
+    if (autoDeleteQuery.value) queryText.value = "";
     waiting.value = true;
     try {
         const responseECCE = await getECCE(query, props.config.ecce);
@@ -59,7 +69,9 @@ const sendQuery = async (query: string) => {
 
         //TODO : resultResponseText以外で帰ってきた返答候補を選択出来るようにする
         responseECCEText.value = responseECCE.resultResponseText;
-        insertHistory(query, responseECCEText.value);
+        if (!disbleInsertHistory.value) {
+            insertHistory(query, responseECCEText.value);
+        }
         switch (props.config.engine) {
             case "voicevox":
                 await voicevoxSend(responseECCEReplaced.value, props.config.voicevox);
@@ -75,22 +87,55 @@ const sendQuery = async (query: string) => {
     waiting.value = false;
 }
 
+const startSpeech = () => {
+    waiting.value = true;
+    speech.lang = 'ja';
+    speech.interimResults = true;
+    speech.continuous = true;
+    speech.start();
+};
+
+speech.onstart = () => {
+    recording.value = true;
+    waiting.value = false;
+    emits("notify", { color: "info", text: "音声認識エンジンを起動しました。" });
+}
+speech.onnomatch = () => {
+    emits("notify", { color: "info", text: "音声認識に失敗しました" });
+}
+speech.onresult = async (e: any) => {
+    const results = e.results;
+    const startIndex = e.resultIndex;
+
+    queryText.value = results[startIndex][0].transcript;
+    if (results[startIndex].isFinal) {
+        emits("notify", { color: "info", text: "音声認識が終了しました" });
+        if (!waiting.value && autoSend.value) {
+            await sendQuery(queryReplaced.value);
+        }
+    }
+}
+
+const stopSpeech = () => {
+    speech.stop();
+    recording.value = false;
+}
+
 </script>
 
 <template>
     <v-container>
         <h1>おしゃべりする</h1>
         <v-divider></v-divider>
-        <v-row class="mt-4">
-            <v-col>
-                <v-textarea color="primary" variant="solo" rows="7" no-resize label="送信クエリ" v-model="queryText">
-                </v-textarea>
-            </v-col>
-            <v-col>
-                <v-textarea disabled readonly no-resize rows="7" label="送信クエリ(置換後)" v-model="queryReplaced">
-                </v-textarea>
-            </v-col>
-        </v-row>
+        <v-textarea class="mt-4" color="primary" variant="solo" rows="7" no-resize label="送信クエリ" :disabled="waiting"
+            v-model="queryText">
+        </v-textarea>
+        <v-textarea disabled readonly no-resize rows="2" label="送信クエリ(置換後)" v-model="queryReplaced">
+        </v-textarea>
+        <v-divider class="my-2"></v-divider>
+        <v-text-field v-model="responseECCEReplaced" readonly label="ECCEからの返答" variant="outlined"></v-text-field>
+        <v-text-field v-model="responseECCEText" density="compact" disabled label="ECCEからの返答(置換前)" variant="outlined">
+        </v-text-field>
         <v-divider class="my-2"></v-divider>
         <v-btn block size="x-large" color="cyan" @click="sendQuery(queryReplaced)">
             <div v-if="waiting">
@@ -100,15 +145,24 @@ const sendQuery = async (query: string) => {
                 クエリ手動送信
             </div>
         </v-btn>
-        <v-divider class="my-2"></v-divider>
-        <v-row>
-            <v-col>
-                <v-text-field v-model="responseECCEText" readonly label="ECCEからの返答" variant="outlined"></v-text-field>
-            </v-col>
-            <v-col>
-                <v-text-field v-model="responseECCEReplaced" disabled label="ECCEからの返答(置換後)" variant="outlined">
-                </v-text-field>
-            </v-col>
-        </v-row>
+        <v-card class="my-2">
+            <v-card-text>
+                <v-btn @click="stopSpeech" color="purple" variant="outlined" block v-if="recording">音声認識を停止</v-btn>
+                <v-btn @click="stopSpeech" color="purple" variant="outlined" block v-else-if="waiting" disabled>
+                    <v-progress-circular indeterminate></v-progress-circular>
+                </v-btn>
+                <v-btn @click="startSpeech" color="purple" block v-else>音声認識を開始</v-btn>
+                <v-row class="mt-4">
+                    <v-col>
+                        <v-checkbox v-model="autoSend" density="compact" class="my-n4" label="音声認識した結果を自動送信する"></v-checkbox>
+                        <v-checkbox v-model="disbleInsertHistory" density="compact" class="my-n4" label="会話履歴に返答を追加しない"></v-checkbox>
+                        <v-checkbox v-model="autoDeleteQuery" density="compact" class="my-n4" label="送信クエリを自動で削除"></v-checkbox>
+                    </v-col>
+                    <v-col>
+                        <v-btn variant="outlined" color="warning" @click="deleteHisory" block>会話履歴をクリア</v-btn>
+                    </v-col>
+                </v-row>
+            </v-card-text>
+        </v-card>
     </v-container>
 </template>

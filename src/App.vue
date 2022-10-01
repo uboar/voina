@@ -34,28 +34,6 @@ const config = ref<Config>({
 });
 
 /**
- * 入力テキスト置き換え設定
- */
-const inputReplaceOptions = ref<Array<ReplaceText>>([
-  {
-    before: "つむぎ",
-    after: "君",
-  }
-]);
-/**
- * 出力テキスト置き換え設定
- */
-const outputReplaceOptions = ref<Array<ReplaceText>>([
-  {
-    before: "〈わたし〉",
-    after: "あーし"
-  },
-  {
-    before: "〈あなた〉",
-    after: "マスター"
-  }
-]);
-/**
  * メインタブ選択
  */
 const tabs = ref(0);
@@ -126,7 +104,7 @@ const saveConfig = () => {
               <v-container>
                 <h1>入力テキスト置き換え設定</h1>
                 <p class="mb-4">ECCEに入力するテキストの置き換え設定を行います。上に行くほど優先順位が高くなります。</p>
-                <replace-config-vue v-model="inputReplaceOptions"></replace-config-vue>
+                <replace-config-vue v-model="config.inputReplaceText"></replace-config-vue>
               </v-container>
             </v-window-item>
             <!-- 出力テキスト設定タブ -->
@@ -134,7 +112,7 @@ const saveConfig = () => {
               <v-container>
                 <h1>出力テキスト置き換え設定</h1>
                 <p class="mb-4">ECCEから出力される(VOICEVOXに入力する)テキストの置き換え設定を行います。上に行くほど優先順位が高くなります。</p>
-                <replace-config-vue v-model="outputReplaceOptions"></replace-config-vue>
+                <replace-config-vue v-model="config.outputReplaceText"></replace-config-vue>
               </v-container>
             </v-window-item>
           </v-window>
@@ -145,8 +123,7 @@ const saveConfig = () => {
         </v-window-item>
         <!-- おしゃべりタブ -->
         <v-window-item>
-          <talk-mode-vue :config="config" :input-replace-option="inputReplaceOptions"
-            :output-replace-option="outputReplaceOptions" @notify="(val) => {showErr(val.err, val.text, val.color)}">
+          <talk-mode-vue :config="config" @notify="(val) => {showErr(val.err, val.text, val.color)}">
           </talk-mode-vue>
         </v-window-item>
       </v-window>
