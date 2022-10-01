@@ -1,12 +1,11 @@
-﻿name: "build-test"
-
-on: 
+﻿name: "publish"
+on:
   push:
     branches:
-      - build
+      - release
 
 jobs:
-  test-tauri:
+  publish-tauri:
     strategy:
       fail-fast: false
       matrix:
@@ -33,8 +32,9 @@ jobs:
     - uses: tauri-apps/tauri-action@v0
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - name: Archive production artifacts
-      uses: actions/upload-artifact@v3
-      with: 
-        name: dist-tauri
-        path: src-tauri/target/release/
+      with:
+        tagName: app-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
+        releaseName: "App v__VERSION__"
+        releaseBody: "See the assets to download this version and install."
+        releaseDraft: true
+        prerelease: false
