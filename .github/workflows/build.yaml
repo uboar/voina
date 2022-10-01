@@ -1,4 +1,9 @@
 ﻿name: "build-test"
+uses: actions/upload-artifact
+with:
+  name: out
+  path: out
+
 on: 
   push:
     branches:
