@@ -1,7 +1,7 @@
 # voECCE
 
 # 🎸おことわり
-本アプリはrinna社が提供する[ECCE API](https://developers.rinna.co.jp/product#product=ecce-api)及び、ヒホ様が提供するVOICEVOX、ごらんのすぽんさー様が提供する民安☆TALKを使用します。各ソフトウェア及びキャラクターの利用規約を熟読の上ご使用下さい。
+本アプリはrinna社が提供する[ECCE API](https://developers.rinna.co.jp/product#product=ecce-api)及び、ヒホ様が提供する[VOICEVOX](https://voicevox.hiroshiba.jp)、ごらんのすぽんさー様が提供する[民安★TALK](https://publish-tool.blogspot.com)を使用します。各ソフトウェア及びキャラクターの利用規約を熟読の上ご使用下さい。
 
 # 🤔これは何？
 ソフトウェアトーク(VOICEVOX、VOICELOIDなど)とECCE(Editable Content Conversation Engine)を連携する事で、ボイロキャラクターとのおしゃべりを可能にするアプリです。
@@ -14,7 +14,7 @@
 
 # 📱使い方
 ## ECCEの準備
-本アプリはECCE APIを使用します。ECCEの利用にはrinna社のアカウント及びサブスクリプションキーの登録が必要です。サブスクリプションキーの取得方法は[こちら](https://developers.rinna.co.jp/product#product=ecce-api)を御覧下さい。
+本アプリはECCE APIを使用します。利用にはrinna社のアカウント及びサブスクリプションキーの登録が必要です。サブスクリプションキーの取得方法は[こちら](https://developers.rinna.co.jp/product#product=ecce-api)を御覧下さい。
 
 
 ## アプリの起動
@@ -29,7 +29,7 @@
 ### 音声合成エンジン設定
 音声合成エンジンの設定を行います。
 
-`音声合成エンジンを選択`から`VOICEVOX API`または`民安☆TALK(Windows版のみ)`を選択して下さい。
+`音声合成エンジンを選択`から`VOICEVOX API`または`民安★TALK(Windows版のみ)`を選択して下さい。
 
 #### VOICEVOX APIを使用する場合
 特に設定を変更していなければ、VOICEVOXを起動するだけでそのまま使用できます。
@@ -42,10 +42,10 @@
 - `テスト発話`
   - 発話の確認ができます。
 
-#### 民安☆TALKを使用する場合
-**システム環境変数に民安☆TALK本体が存在するパスを登録する必要があります。**
+#### 民安★TALKを使用する場合
+**システム環境変数に民安★TALK本体が存在するパスを登録する必要があります。**
 
-コマンドプロンプトに`vrx`と入力し、民安☆TALKが起動する状態にして下さい。
+コマンドプロンプトに`vrx`と入力し、民安★TALKが起動する状態にして下さい。
 - `追加引数`
   - vrxコマンド実行時に追加の引数を設定できます。
 - `テスト発話`

@@ -1,7 +1,7 @@
 import { Command } from "@tauri-apps/api/shell";
 
 /**
- * 民安☆TALKで発話
+ * 民安★TALKで発話
  * @param text 発話するテキスト
  * @param args 引数
  */

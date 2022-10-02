@@ -55,7 +55,7 @@ const engines = [
     value: "voicevox",
   },
   {
-    text: "民安☆TALK(Windows版のみ)",
+    text: "民安★TALK(Windows版のみ)",
     value: "tamiyasu",
   }
 ]
@@ -101,7 +101,7 @@ const vvoxTestSpeak = async function () {
 }
 
 /**
- * 民安☆TALKを使ってテキスト発話する
+ * 民安★TALKを使ってテキスト発話する
  */
 const tamiyasuTestSpeak = async function () {
   waiting.value = true;
@@ -158,10 +158,10 @@ const tamiyasuTestSpeak = async function () {
         </v-card-text>
       </v-card>
     </div>
-    <!-- 民安☆TALKの設定 -->
+    <!-- 民安★TALKの設定 -->
     <div v-else>
       <v-alert color="warning" variant="outlined" class="mb-4">
-        民安☆TALKが存在するフォルダをPATH(環境変数)に追加して下さい。
+        民安★TALKが存在するフォルダをPATH(環境変数)に追加して下さい。
       </v-alert>
       <v-text-field v-model="currentConfig.tamiyasu.argument" label="追加引数"></v-text-field>
       <v-btn block color="cyan" :disabled="waiting" @click="tamiyasuTestSpeak" class="mb-4">
@@ -178,7 +178,7 @@ const tamiyasuTestSpeak = async function () {
         </v-card-title>
         <v-card-text class="ml-8">
           <ul>
-            <li><a href="" target="_blank">民安☆TALK</a></li>
+            <li><a href="" target="_blank">民安★TALK</a></li>
           </ul>
         </v-card-text>
       </v-card>
