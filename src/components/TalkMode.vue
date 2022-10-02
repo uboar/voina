@@ -153,7 +153,7 @@ const stopSpeech = () => {
         <v-text-field v-model="responseECCEText" density="compact" disabled label="ECCEからの返答(置換前)" variant="outlined">
         </v-text-field>
         <v-divider class="my-2"></v-divider>
-        <v-btn block size="x-large" color="cyan" @click="sendQuery(queryReplaced)" :disabled="!waiting">
+        <v-btn block size="x-large" color="cyan" @click="sendQuery(queryReplaced)" :disabled="waiting">
             <div v-if="waiting">
                 <v-progress-circular indeterminate></v-progress-circular>
             </div>
