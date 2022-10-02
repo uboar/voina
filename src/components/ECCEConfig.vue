@@ -2,7 +2,7 @@
 import { onMounted, ref } from 'vue';
 import { computed } from '@vue/reactivity';
 import { Config, ECCERequestSchema, ECCEResponseSchema } from '../scripts/interfaces';
-import { getClient, Body, ResponseType } from '@tauri-apps/api/http';
+import { getClient, Body } from '@tauri-apps/api/http';
 
 /**
  * Props
@@ -54,19 +54,13 @@ const mounted = onMounted(() => {
  * -----------------------------------------------------------------------------------------
  */
 
-/**
- * APIからのデータ取得中
- */
+//APIからのデータ取得中
 const waiting = ref(false);
 
-/**
- * サブスクリプションキーのバリデーションデータ
- */
+//サブスクリプションキーのバリデーションデータ
 const subKeyValid = ref<any>(null);
 
-/**
- * サブスクリプションキーの表示
- */
+//サブスクリプションキーの表示
 const keyShow = ref(false);
 
 /**
@@ -74,9 +68,7 @@ const keyShow = ref(false);
  * -----------------------------------------------------------------------------------------
  */
 
-/**
- * ECCEのAPIテスト
- */
+//ECCEのAPIテスト
 const ECCETest = async function () {
   waiting.value = true;
   try {

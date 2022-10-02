@@ -33,7 +33,9 @@ const emits = defineEmits<Emits>();
  * Computed
  * -----------------------------------------------------------------------------------------
  */
+//置換後の送信テキスト
 const queryReplaced = computed(() => replaceText(queryText.value, props.config.inputReplaceText));
+//置換後の受信テキスト
 const responseECCEReplaced = computed(() => replaceText(responseECCEText.value, props.config.outputReplaceText));
 
 
@@ -42,13 +44,22 @@ const responseECCEReplaced = computed(() => replaceText(responseECCEText.value, 
  * -----------------------------------------------------------------------------------------
  */
 
+//TODO : webkitSpeechRecongnitionのえらーを治す
+//音声認識エンジン
 const speech = new window.webkitSpeechRecognition();
+//送信テキスト
 const queryText = ref("");
-const recording = ref(false);
+//受信テキスト
 const responseECCEText = ref("");
+//音声認識中フラグ
+const recording = ref(false);
+//API返答待ちフラグ
 const waiting = ref(false);
+//自動送信
 const autoSend = ref(true);
+//自動削除
 const autoDeleteQuery = ref(true);
+//会話ロギング無効
 const disbleInsertHistory = ref(false);
 
 /**
@@ -87,6 +98,9 @@ const sendQuery = async (query: string) => {
     waiting.value = false;
 }
 
+/**
+ * 音声認識エンジンの起動
+ */
 const startSpeech = () => {
     waiting.value = true;
     speech.lang = 'ja';
@@ -95,6 +109,9 @@ const startSpeech = () => {
     speech.start();
 };
 
+/**
+ * 音声認識系のイベント
+ */
 speech.onstart = () => {
     recording.value = true;
     waiting.value = false;
@@ -115,7 +132,6 @@ speech.onresult = async (e: any) => {
         }
     }
 }
-
 const stopSpeech = () => {
     speech.stop();
     recording.value = false;
@@ -127,10 +143,10 @@ const stopSpeech = () => {
     <v-container>
         <h1>おしゃべりする</h1>
         <v-divider></v-divider>
-        <v-textarea class="mt-4" color="primary" variant="solo" rows="7" no-resize label="送信クエリ" :disabled="waiting"
+        <v-textarea class="mt-4" color="primary" variant="solo" rows="7" no-resize label="送信テキスト" :disabled="waiting"
             v-model="queryText">
         </v-textarea>
-        <v-textarea disabled readonly no-resize rows="2" label="送信クエリ(置換後)" v-model="queryReplaced">
+        <v-textarea disabled readonly no-resize rows="2" label="送信テキスト(置換後)" v-model="queryReplaced">
         </v-textarea>
         <v-divider class="my-2"></v-divider>
         <v-text-field v-model="responseECCEReplaced" readonly label="ECCEからの返答" variant="outlined"></v-text-field>
@@ -156,7 +172,7 @@ const stopSpeech = () => {
                     <v-col>
                         <v-checkbox v-model="autoSend" density="compact" class="my-n4" label="音声認識した結果を自動送信する"></v-checkbox>
                         <v-checkbox v-model="disbleInsertHistory" density="compact" class="my-n4" label="会話履歴に返答を追加しない"></v-checkbox>
-                        <v-checkbox v-model="autoDeleteQuery" density="compact" class="my-n4" label="送信クエリを自動で削除"></v-checkbox>
+                        <v-checkbox v-model="autoDeleteQuery" density="compact" class="my-n4" label="送信テキストを自動で削除"></v-checkbox>
                     </v-col>
                     <v-col>
                         <v-btn variant="outlined" color="warning" @click="deleteHisory" block>会話履歴をクリア</v-btn>

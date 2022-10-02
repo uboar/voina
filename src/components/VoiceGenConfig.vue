@@ -44,13 +44,11 @@ const currentConfig = computed({
 });
 
 /**
- * data
+ * Data
  * -----------------------------------------------------------------------------------------
  */
 
-/**
- * 音声合成エンジンの種類
- */
+//音声合成エンジンの種類
 const engines = [
   {
     text: "VOICEVOX API",
@@ -61,18 +59,12 @@ const engines = [
     value: "tamiyasu",
   }
 ]
-/**
- * バリデーション系
- */
+//バリデーション系
 const ajv = new Ajv();
 const URLValid = ref<any>(null);
-/**
- * VOICEVOXの話者データ(VOICEVOX APIから取得する)
- */
+//VOICEVOXの話者データ(VOICEVOX APIから取得する)
 const speakers = ref<Array<{ text: string, value: number }>>(speakersInit);
-/**
- * API待機中判定
- */
+//API待機中フラグ
 const waiting = ref(false);
 
 /**

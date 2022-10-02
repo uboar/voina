@@ -1,10 +1,10 @@
 [package]
 name = "voecce"
-version = "0.0.0"
-description = "A Tauri App"
-authors = ["you"]
-license = ""
-repository = ""
+version = "0.1.0"
+description = "Connecting Software Talk and ECCE"
+authors = ["uboar"]
+license = "MIT"
+repository = "https://github.com/uboar/voECCE"
 edition = "2021"
 rust-version = "1.57"
 

@@ -1,16 +1,89 @@
-# Tauri + Vue 3 + TypeScript
+# voECCE
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+# 🎸おことわり
+本アプリはrinna社が提供する[ECCE API](https://developers.rinna.co.jp/product#product=ecce-api)及び、ヒホ様が提供するVOICEVOX、ごらんのすぽんさー様が提供する民安☆TALKを使用します。各ソフトウェア及びキャラクターの利用規約を熟読の上ご使用下さい。
 
-## Recommended IDE Setup
+# 🤔これは何？
+ソフトウェアトーク(VOICEVOX、VOICELOIDなど)とECCE(Editable Content Conversation Engine)を連携する事で、ボイロキャラクターとのおしゃべりを可能にするアプリです。
 
-- [VS Code](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+# 👩‍🔧出来ること
+- テキストを直接入力しておしゃべり
+- 音声認識機能(Web Speech API)を使用しておしゃべり
+- 入力文字列・出力文字列の自動置き換え
+  - 主に一人称・二人称の置き換えに使用
 
-## Type Support For `.vue` Imports in TS
+# 📱使い方
+## ECCEの準備
+本アプリはECCE APIを使用します。ECCEの利用にはrinna社のアカウント及びサブスクリプションキーの登録が必要です。サブスクリプションキーの取得方法は[こちら](https://developers.rinna.co.jp/product#product=ecce-api)を御覧下さい。
 
-Since TypeScript cannot handle type information for `.vue` imports, they are shimmed to be a generic Vue component type by default. In most cases this is fine if you don't really care about component prop types outside of templates. However, if you wish to get actual prop types in `.vue` imports (for example to get props validation when using manual `h(...)` calls), you can enable Volar's Take Over mode by following these steps:
 
-1. Run `Extensions: Show Built-in Extensions` from VS Code's command palette, look for `TypeScript and JavaScript Language Features`, then right click and select `Disable (Workspace)`. By default, Take Over mode will enable itself if the default TypeScript extension is disabled.
-2. Reload the VS Code window by running `Developer: Reload Window` from the command palette.
+## アプリの起動
+本アプリはOSのWebレンダラーを使用します。Windows10を使用している方は[WebView2](https://developer.microsoft.com/ja-jp/microsoft-edge/webview2/)のインストールが必要になる可能性があります。
 
-You can learn more about Take Over mode [here](https://github.com/johnsoncodehk/volar/discussions/471).
+また、本アプリは初回起動時に実行ファイルと同じディレクトリにコンフィグファイル(config.json)を生成します。一部のウイルス対策ソフト等がアプリをブロックする可能ががあります。
+
+## 『**設定**』タブ
+全ての設定は、`コンフィグファイルを上書き`をクリックする事で、`config.json`に保存する事ができます。
+
+
+### 音声合成エンジン設定
+音声合成エンジンの設定を行います。
+
+`音声合成エンジンを選択`から`VOICEVOX API`または`民安☆TALK(Windows版のみ)`を選択して下さい。
+
+#### VOICEVOX APIを使用する場合
+特に設定を変更していなければ、VOICEVOXを起動するだけでそのまま使用できます。
+- `APIのURL`
+  - VOICEVOX APIのURLを入力します。
+- `話者一覧を取得`
+  - VOICEVOX APIから使用できる話者の一覧を取得します。
+- `話者ID`
+  - 話者を選択する事ができます。
+- `テスト発話`
+  - 発話の確認ができます。
+
+#### 民安☆TALKを使用する場合
+**システム環境変数に民安☆TALK本体が存在するパスを登録する必要があります。**
+
+コマンドプロンプトに`vrx`と入力し、民安☆TALKが起動する状態にして下さい。
+- `追加引数`
+  - vrxコマンド実行時に追加の引数を設定できます。
+- `テスト発話`
+  - 発話の確認ができます。
+
+### ECCE設定
+ECCEの設定を行います。`subscription key`の設定は**必須**です。
+- `subscription key`
+  - 取得したECCEのサブスクリプションキーを入力します。**サブスクリプションキーの入力無しで、本アプリは使用できません。**
+- `L2返却件数・L3返却件数`
+  - ECCE APIの`l2ReturnNum`および`l3ReturnNum`の値を設定できます。
+- `APIテスト`
+  - ECCE APIの動作確認が出来ます。返答は下部にポップアップ表示されます。
+
+### 入力テキスト置換設定
+入力されたテキストをECCEに送信する際、本設定に従いテキストを置換します。上の項目ほど、置換時の優先度が高くなります。
+
+主に、固有名詞を代名詞に変換するのに使用します。(例：`つむぎちゃん→あなた`)
+
+### 出力テキスト置換設定
+ECCEから受け取った返答を音声合成エンジンに送信する際、本設定に従いテキストを置換します。
+
+主に、一人称・二人称の置換に使用します。(ECCEでは、一人称が`"〈わたし〉"`、二人称が`"〈あなた〉"`で返答されます。)
+
+## 『**おしゃべりする**』タブ
+### テキスト入力を使う
+`送信テキスト`にテキストを入力し、`送信`ボタンをクリックする事で、おしゃべりを行います。
+### 音声認識を使う
+`音声認識を開始`をクリックすると音声認識エンジンが起動し、直接話しかける事でのおしゃべりが可能になります。(マイクの使用許可が必要な場合があります。)
+### おしゃべりの設定
+- `音声認識した結果を自動送信する`
+  - 音声に区切りが入った際、自動でECCEにテキストを送信します。
+- `送信テキストを自動で削除`
+  - ECCEにテキストを送信した際、テキストボックス内の文章を削除します。
+- `会話履歴に返答を追加しない`
+  - ECCEに送付する会話ログにおしゃべりの内容を追加しません。（ECCEは過去2回分の会話履歴を基に返答を生成する機能があります。）
+- `会話履歴をクリア`
+  - ECCEに送付する会話ログの内容を初期化します。
+
+# 💨いっつみー
+- [uboar](https://twitter.com/_uboar_)

@@ -1,7 +1,11 @@
 import { getClient, Body, ResponseType } from '@tauri-apps/api/http';
 import { Config, VoicevoxSpeakersSchema } from './interfaces';
 
-
+/**
+ * VOICEVOX話者データの取得
+ * @param config VOICEVOXのコンフィグ
+ * @returns VOICEVOX話者データ(整形済み)
+ */
 export const voicevoxGetSpeakers = async (config: Config["voicevox"]): Promise<Array<{ text: string, value: number }>> => {
     let speakers = [] as Array<{ text: string, value: number }>;
 
@@ -24,6 +28,11 @@ export const voicevoxGetSpeakers = async (config: Config["voicevox"]): Promise<A
     return speakers;
 }
 
+/**
+ * VOICEVOXで発話
+ * @param text 発話テキスト
+ * @param config VOICEVOXのコンフィグ
+ */
 export const voicevoxSend = async (text: string, config: Config["voicevox"]) => {
     const client = await getClient();
 

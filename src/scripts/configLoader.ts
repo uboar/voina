@@ -21,6 +21,16 @@ export const initialConfig: Config = {
     },
     inputReplaceText: [
         {
+            before: "つむぎちゃん",
+            after: "あなた",
+        },
+        {
+            before: "つむぎ",
+            after: "あなた",
+        }
+    ],
+    outputReplaceText: [
+        {
             before: "〈わたし〉",
             after: "あーし"
         },
@@ -28,15 +38,13 @@ export const initialConfig: Config = {
             before: "〈あなた〉",
             after: "マスター"
         }
-    ],
-    outputReplaceText: [
-        {
-            before: "つむぎ",
-            after: "君",
-        }
     ]
 };
 
+/**
+ * コンフィグファイルをロード
+ * @returns コンフィグの内容
+ */
 export const loadConfig = async (): Promise<Config> => {
     let config = initialConfig;
     if (await exists('config.json', { dir: BaseDirectory.Resource }) as unknown) { // boolean?
@@ -50,6 +58,10 @@ export const loadConfig = async (): Promise<Config> => {
     return config;
 }
 
+/**
+ * コンフィグファイルの上書き
+ * @param config 上書きするコンフィグの内容
+ */
 export const writeConfig = async (config: Config) => {
     if (await exists('config.json', { dir: BaseDirectory.Resource }) as unknown) {
         await writeTextFile('config.json', JSON.stringify(config), { dir: BaseDirectory.Resource });

@@ -1,8 +1,11 @@
+
+//置き換えテキスト
 export interface ReplaceText {
   before: string
   after: string
 }
 
+//設定
 export interface Config {
   engine: string
   tamiyasu: {
@@ -23,6 +26,7 @@ export interface Config {
   outputReplaceText: Array<ReplaceText>
 }
 
+//VOICEVOXの話者データ
 export interface VoicevoxSpeakersSchema {
   name: string
   speaker_uuid: string
@@ -33,6 +37,7 @@ export interface VoicevoxSpeakersSchema {
   version: string
 }
 
+//ECCEのリクエストボディ
 export interface ECCERequestSchema {
   knowledgePath: string
   query: string
@@ -41,6 +46,7 @@ export interface ECCERequestSchema {
   l3ReturnNum?: number
 }
 
+//ECCEのレスポンスボディ
 export interface ECCEResponseSchema {
   resultResponseType: string
   resultResponseText: string

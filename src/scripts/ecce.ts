@@ -1,13 +1,13 @@
-import { getClient, Body, ResponseType } from '@tauri-apps/api/http';
+import { getClient, Body, ResponseType, Response } from '@tauri-apps/api/http';
 import { ECCERequestSchema, ECCEResponseSchema, Config } from './interfaces';
 import _ from 'lodash';
 
 let dialogHistory = ["", "", "", ""];
 
 /**
- * 
- * @param query 
- * @param ecceSetttings 
+ * ECCEにリクエストを送信
+ * @param query 返信内容のテキスト
+ * @param ecceSetttings ECCEの設定 
  * @returns 
  */
 export const getECCE = async (query: string, ecceSetttings: Config["ecce"]): Promise<ECCEResponseSchema> => {
@@ -30,7 +30,12 @@ export const getECCE = async (query: string, ecceSetttings: Config["ecce"]): Pro
             "Content-Type": "application/json",
             "Cache-Control": "no-cache",
         }
-    });
+    }) as any;
+
+
+    // TODO : もうちょっとちゃんとバリデーションする
+    if(!response.data.resultResponseText) throw "ECCEからの返答でエラーが発生しました";
+
     return response.data as ECCEResponseSchema;
 }
 
@@ -43,8 +48,8 @@ export const deleteHisory = () => {
 
 /**
  * 会話履歴を追加
- * @param request 
- * @param response 
+ * @param request  送信したテキスト
+ * @param response 返信されたテキスト
  */
 export const insertHistory = (request: string, response: string) => {
     if(!response) return;
