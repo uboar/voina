@@ -48,6 +48,8 @@ const responseECCEReplaced = computed(() => replaceText(responseECCEText.value, 
 const speech = new window.webkitSpeechRecognition();
 //送信テキスト
 const queryText = ref("");
+//表示を減らす
+const compactView = ref(false);
 //受信テキスト
 const responseECCEText = ref("");
 //音声認識中フラグ
@@ -71,7 +73,6 @@ const disbleInsertHistory = ref(false);
  * @param query 
  */
 const sendQuery = async (query: string) => {
-    if (autoDeleteQuery.value) queryText.value = "";
     waiting.value = true;
     try {
         const responseECCE = await getECCE(query, props.config.ecce);
@@ -90,6 +91,7 @@ const sendQuery = async (query: string) => {
                 tamiyasuSend(responseECCEReplaced.value, props.config.tamiyasu.argument)
                 break;
         }
+        if (autoDeleteQuery.value) queryText.value = "";
     } catch (err) {
         console.error(err);
         emits("notify", { err: err, color: "error", text: "エラーが発生しました : " })
@@ -116,11 +118,11 @@ speech.onstart = () => {
     waiting.value = false;
     emits("notify", { color: "info", text: "音声認識サービスに接続されました。" });
 }
-speech.onspeechstart  = () => {
-    emits("notify", { color: "info", text: "音声が検出されました。"})
+speech.onspeechstart = () => {
+    emits("notify", { color: "info", text: "音声が検出されました。" })
 }
 speech.onerror = (err) => {
-    emits("notify", { color: "info", text: "音声認識でエラーが発生しました : ", err: err});
+    emits("notify", { color: "info", text: "音声認識でエラーが発生しました : ", err: err });
 }
 speech.onresult = async (e: SpeechRecognitionEvent) => {
     const results = e.results;
@@ -128,16 +130,29 @@ speech.onresult = async (e: SpeechRecognitionEvent) => {
 
     queryText.value = results[startIndex][0].transcript;
     if (results[startIndex].isFinal) {
-        emits("notify", { color: "info", text: "音声認識が終了しました" });
+        emits("notify", { color: "info", text: "音声認識が終了しました。" });
         if (!waiting.value && autoSend.value) {
             await sendQuery(queryReplaced.value);
         }
     }
-}
+};
+
+/**
+ * 音声認識の停止
+ */
 const stopSpeech = () => {
     speech.stop();
+    emits("notify", { color: "info", text: "音声認識サービスを停止しました。" });
     recording.value = false;
-}
+};
+
+/**
+ * 
+ */
+const deleteTalkHistory = () => {
+    deleteHisory();
+    emits("notify", { color: "warning", text: "会話履歴を削除しました。" });
+};
 
 </script>
 
@@ -145,14 +160,14 @@ const stopSpeech = () => {
     <v-container>
         <h1>おしゃべりする</h1>
         <v-divider></v-divider>
-        <v-textarea class="mt-4" color="primary" variant="solo" rows="7" no-resize label="送信テキスト" :disabled="waiting"
+        <v-textarea class="mt-4" color="primary" variant="solo" :rows="(compactView) ? 2 : 7" no-resize label="送信テキスト" :disabled="waiting"
             v-model="queryText">
         </v-textarea>
-        <v-textarea disabled readonly no-resize rows="2" label="送信テキスト(置換後)" v-model="queryReplaced">
+        <v-textarea disabled readonly no-resize rows="2" label="送信テキスト(置換後)" v-if="!compactView" v-model="queryReplaced">
         </v-textarea>
         <v-divider class="my-2"></v-divider>
         <v-text-field v-model="responseECCEReplaced" readonly label="ECCEからの返答" variant="outlined"></v-text-field>
-        <v-text-field v-model="responseECCEText" density="compact" disabled label="ECCEからの返答(置換前)" variant="outlined">
+        <v-text-field v-model="responseECCEText" density="compact" disabled label="ECCEからの返答(置換前)" v-if="!compactView" variant="outlined">
         </v-text-field>
         <v-divider class="my-2"></v-divider>
         <v-btn block size="x-large" color="cyan" @click="sendQuery(queryReplaced)" :disabled="waiting">
@@ -172,12 +187,17 @@ const stopSpeech = () => {
                 <v-btn @click="startSpeech" color="purple" block v-else>音声認識を開始</v-btn>
                 <v-row class="mt-4">
                     <v-col>
-                        <v-checkbox v-model="autoSend" density="compact" class="my-n4" label="音声認識した結果を自動送信する"></v-checkbox>
-                        <v-checkbox v-model="disbleInsertHistory" density="compact" class="my-n4" label="会話履歴に返答を追加しない"></v-checkbox>
-                        <v-checkbox v-model="autoDeleteQuery" density="compact" class="my-n4" label="送信テキストを自動で削除"></v-checkbox>
+                        <v-checkbox v-model="autoSend" density="compact" class="my-n4" label="音声認識した結果を自動送信する">
+                        </v-checkbox>
+                        <v-checkbox v-model="disbleInsertHistory" density="compact" class="my-n4" label="会話履歴に返答を追加しない">
+                        </v-checkbox>
+                        <v-checkbox v-model="autoDeleteQuery" density="compact" class="my-n4" label="送信テキストを自動で削除">
+                        </v-checkbox>
                     </v-col>
                     <v-col>
-                        <v-btn variant="outlined" color="warning" @click="deleteHisory" block>会話履歴をクリア</v-btn>
+                        <v-btn variant="outlined" color="warning" @click="deleteTalkHistory" block>会話履歴をクリア</v-btn>
+                        <v-switch v-model="compactView" color="primary" label="表示を減らす">
+                        </v-switch>
                     </v-col>
                 </v-row>
             </v-card-text>

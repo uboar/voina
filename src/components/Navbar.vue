@@ -68,6 +68,7 @@ const toggleTheme = () => {
       <v-tabs fixed-tabs align-with-title v-model="tabValue">
         <v-tab>設定</v-tab>
         <v-tab>おしゃべりする</v-tab>
+        <v-tab v-if="false">履歴</v-tab>
       </v-tabs>
     </template>
   </v-app-bar>

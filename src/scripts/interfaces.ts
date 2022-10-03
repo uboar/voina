@@ -37,6 +37,39 @@ export interface VoicevoxSpeakersSchema {
   version: string
 }
 
+//VOICEVOXのオーディオクエリ
+export interface VoicevoxAudioQuerySchema {
+  accent_phrases: Array<{
+    moras: Array<{
+      text: string
+      consonant?: string
+      consonant_length?: number
+      vowel: string
+      vowel_length: number
+      pitch: number
+    }>
+    accent: number
+    pause_mora?: Array<{
+      text: string,
+      consonant?: string
+      consonant_length?: number
+      vowel: string
+      vowel_length: number
+      pitch: number
+    }>
+    is_interrogative?: boolean
+  }>
+  speedScale: number
+  pitchScale: number
+  intonationScale: number
+  volumeScale: number
+  prePhonemeLength: number
+  postPhonemeLength: number
+  outputSamplingRate: number
+  outputStereo: boolean
+  kana?: string
+}
+
 //ECCEのリクエストボディ
 export interface ECCERequestSchema {
   knowledgePath: string
@@ -59,4 +92,19 @@ export interface ECCEResponseSchema {
   l2Docs: Array<string>
   l3Docs: Array<string>
   type: string
+}
+
+export interface HistoryItem {
+  selectedQueryText: string,
+  selectedResponseText: string,
+  ECCERequest: ECCERequestSchema
+  ECCEResponse: ECCEResponseSchema
+  engine: string
+  voicevox?: {
+    speaker: number
+    audioQuery: VoicevoxAudioQuerySchema
+  }
+  tamiyasu?: {
+    args: string
+  }
 }

@@ -8,6 +8,7 @@ import VoiceGenConfigVue from './components/VoiceGenConfig.vue';
 import ReplaceConfigVue from './components/ReplaceConfig.vue';
 import ECCEConfigVue from './components/ECCEConfig.vue';
 import TalkModeVue from './components/TalkMode.vue';
+import ChatHistory from './components/ChatHistory.vue';
 
 /**
  * Mounted
@@ -125,6 +126,10 @@ const saveConfig = () => {
         <v-window-item>
           <talk-mode-vue :config="config" @notify="(val) => {showErr(val.err, val.text, val.color)}">
           </talk-mode-vue>
+        </v-window-item>
+        <!-- 履歴タブ -->
+        <v-window-item>
+          <chat-history></chat-history>
         </v-window-item>
       </v-window>
       <v-snackbar v-model="statusMessage.show" :timeout="2000" :color="statusMessage.color">
