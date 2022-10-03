@@ -44,7 +44,6 @@ const responseECCEReplaced = computed(() => replaceText(responseECCEText.value, 
  * -----------------------------------------------------------------------------------------
  */
 
-//TODO : webkitSpeechRecongnitionのえらーを治す
 //音声認識エンジン
 const speech = new window.webkitSpeechRecognition();
 //送信テキスト
@@ -115,12 +114,15 @@ const startSpeech = () => {
 speech.onstart = () => {
     recording.value = true;
     waiting.value = false;
-    emits("notify", { color: "info", text: "音声認識エンジンを起動しました。" });
+    emits("notify", { color: "info", text: "音声認識サービスに接続されました。" });
 }
-speech.onnomatch = () => {
-    emits("notify", { color: "info", text: "音声認識に失敗しました" });
+speech.onspeechstart  = () => {
+    emits("notify", { color: "info", text: "音声が検出されました。"})
 }
-speech.onresult = async (e: any) => {
+speech.onerror = (err) => {
+    emits("notify", { color: "info", text: "音声認識でエラーが発生しました : ", err: err});
+}
+speech.onresult = async (e: SpeechRecognitionEvent) => {
     const results = e.results;
     const startIndex = e.resultIndex;
 
