@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Config } from '../scripts/interfaces';
+import { Config } from '../scripts/configLoader';
 import { ref } from 'vue';
 import { computed } from '@vue/reactivity';
 import { tamiyasuSend } from '../scripts/tamiyasu';

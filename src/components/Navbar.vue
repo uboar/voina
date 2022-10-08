@@ -64,6 +64,12 @@ const toggleTheme = () => {
           テーマ切り替え
         </v-tooltip>
       </v-btn>
+      <v-btn icon variant="plain" href="https://github.com/uboar/voina" target="_blank">
+        <v-icon>mdi-github</v-icon>
+        <v-tooltip activator="parent" location="bottom">
+          ヘルプ / GitHub
+        </v-tooltip>
+      </v-btn>
     </template>
     <template v-slot:extension>
       <v-tabs fixed-tabs align-with-title v-model="tabValue">

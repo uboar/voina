@@ -37,7 +37,7 @@ export interface Config {
 
 export const initialConfig: Config = {
     engine: "voicevox",
-    chatApi: "ecce",
+    chatApi: "cce",
     tamiyasu: {
         path: "",
         argument: "",

@@ -3,7 +3,7 @@ import { computed } from "@vue/reactivity";
 import { Config } from "../scripts/configLoader";
 import ECCEConfig from "./ECCEConfig.vue";
 import CCEConfig from "./CCEConfig.vue";
-import AIMPConfig from "./AIMPConfig.vue";
+import AMPConfig from "./AMPConfig.vue";
 
 
 interface Props { modelValue: Config }
@@ -30,15 +30,15 @@ const config = computed({
 
 const chatApis = [
     {
-        text: "ECCE(Editable Content Conversation Engine)",
-        value: "ecce"
-    },
-    {
         text: "CCE(Character Conversation Japanese)",
         value: "cce",
     },
     {
-        text: "AI Model Prayground",
+        text: "ECCE(Editable Content Conversation Engine)",
+        value: "ecce"
+    },
+    {
+        text: "AI Model Playground",
         value: "aiModelPlayground"
     }
 ]
@@ -61,7 +61,7 @@ const chatApis = [
             <CCEConfig v-model="config.cce" @notify="(val) => emits('notify',{err: val.err, text: val.text, color: val.color})"></CCEConfig>
         </div>
         <div v-if="config.chatApi === 'aiModelPlayground'">
-            <AIMPConfig v-model="config.aiModelPlayGround" @notify="(val) => emits('notify',{err: val.err, text: val.text, color: val.color})"></AIMPConfig>
+            <AMPConfig v-model="config.aiModelPlayGround" @notify="(val) => emits('notify',{err: val.err, text: val.text, color: val.color})"></AMPConfig>
         </div>
         <v-divider class="mb-4"></v-divider>
     </v-container>
