@@ -1,5 +1,50 @@
 import { getClient, Body, ResponseType } from '@tauri-apps/api/http';
-import { Config, VoicevoxSpeakersSchema } from './interfaces';
+import { Config } from './configLoader';
+
+//VOICEVOXの話者データ
+export interface VoicevoxSpeakersSchema {
+    name: string
+    speaker_uuid: string
+    styles: Array<{
+        id: number
+        name: string
+    }>
+    version: string
+}
+
+//VOICEVOXのオーディオクエリ
+export interface VoicevoxAudioQuerySchema {
+    accent_phrases: Array<{
+      moras: Array<{
+        text: string
+        consonant?: string
+        consonant_length?: number
+        vowel: string
+        vowel_length: number
+        pitch: number
+      }>
+      accent: number
+      pause_mora?: Array<{
+        text: string,
+        consonant?: string
+        consonant_length?: number
+        vowel: string
+        vowel_length: number
+        pitch: number
+      }>
+      is_interrogative?: boolean
+    }>
+    speedScale: number
+    pitchScale: number
+    intonationScale: number
+    volumeScale: number
+    prePhonemeLength: number
+    postPhonemeLength: number
+    outputSamplingRate: number
+    outputStereo: boolean
+    kana?: string
+  }
+
 
 /**
  * VOICEVOX話者データの取得

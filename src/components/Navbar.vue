@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from '@vue/reactivity';
 import { useTheme } from 'vuetify/lib/framework.mjs';
+import { version } from "../../package.json";
 
 /**
  * Props
@@ -54,7 +55,7 @@ const toggleTheme = () => {
 <template>
   <v-app-bar color="cyan">
     <v-app-bar-title>
-      voECCE
+      voina
     </v-app-bar-title>
     <template v-slot:append>
       <v-btn icon variant="plain" @click="toggleTheme">
@@ -70,6 +71,8 @@ const toggleTheme = () => {
         <v-tab>おしゃべりする</v-tab>
         <v-tab v-if="false">履歴</v-tab>
       </v-tabs>
+      <v-spacer></v-spacer>
+      <p class="text-caption mr-4">Version:{{version}}</p>
     </template>
   </v-app-bar>
 </template>

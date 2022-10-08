@@ -1,10 +1,43 @@
-import { Config } from "./interfaces";
 import { resourceDir } from '@tauri-apps/api/path'
 import { readTextFile, writeTextFile, exists, BaseDirectory } from '@tauri-apps/api/fs';
-
+import { ReplaceText } from './replaceText';
 //初期設定
+
+//設定
+export interface Config {
+    engine: "voicevox" | "tamiyasu"
+    chatApi: "ecce" | "aiModelPlayground" | "cce"
+    tamiyasu: {
+        path: string
+        argument: string
+    }
+    voicevox: {
+        apiURL: string
+        speakerId: number
+    }
+    ecce: {
+        subscriptionKey: string
+        knowledgeSetId: string
+        l2ReturnNum: number
+        l3ReturnNum: number
+    }
+    cce: {
+        subscriptionKey: string
+        outputLength: number
+    }
+    aiModelPlayGround: {
+        subscriptionKey: string
+        authToken: string
+        accessToken: string
+        fileName: string
+    }
+    inputReplaceText: Array<ReplaceText>
+    outputReplaceText: Array<ReplaceText>
+}
+
 export const initialConfig: Config = {
     engine: "voicevox",
+    chatApi: "ecce",
     tamiyasu: {
         path: "",
         argument: "",
@@ -15,9 +48,19 @@ export const initialConfig: Config = {
     },
     ecce: {
         subscriptionKey: "",
-        knowledgePath: "ECCE_Sample.txt",
+        knowledgeSetId: "",
         l2ReturnNum: 3,
         l3ReturnNum: 1,
+    },
+    cce: {
+        subscriptionKey: "",
+        outputLength: 25,
+    },
+    aiModelPlayGround: {
+        fileName: "Cat Model",
+        subscriptionKey: "",
+        accessToken: "",
+        authToken: "",
     },
     inputReplaceText: [
         {

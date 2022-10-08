@@ -1,10 +1,10 @@
 [package]
-name = "voecce"
-version = "0.1.0"
-description = "Connecting Software Talk and ECCE"
+name = "voina"
+version = "0.2.0"
+description = "Connecting Software Talk and ChatBot APIs"
 authors = ["uboar"]
 license = "MIT"
-repository = "https://github.com/uboar/voECCE"
+repository = "https://github.com/uboar/voina"
 edition = "2021"
 rust-version = "1.57"
 

@@ -1,6 +1,6 @@
 {
-  "name": "voecce",
-  "version": "0.1.0",
+  "name": "voina",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "serve": "vite preview",

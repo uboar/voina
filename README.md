@@ -1,4 +1,4 @@
-# voECCE
+# voina
 
 # 🎸おことわり
 本アプリはrinna社が提供する[ECCE API](https://developers.rinna.co.jp/product#product=ecce-api)及び、ヒホ様が提供する[VOICEVOX](https://voicevox.hiroshiba.jp)、ごらんのすぽんさー様が提供する[民安★TALK](https://publish-tool.blogspot.com)を使用します。各ソフトウェア及びキャラクターの利用規約を熟読の上ご使用下さい。

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { computed } from '@vue/reactivity';
-import { ReplaceText } from '../scripts/interfaces';
+import { ReplaceText } from '../scripts/replaceText';
 
 /**
  * Props

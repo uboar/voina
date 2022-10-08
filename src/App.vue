@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue';
-import { Config, ReplaceText } from './scripts/interfaces';
+import { Config } from './scripts/configLoader';
 import { loadConfig, initialConfig, writeConfig } from './scripts/configLoader'
 
 import NavbarVue from './components/Navbar.vue';
 import VoiceGenConfigVue from './components/VoiceGenConfig.vue';
 import ReplaceConfigVue from './components/ReplaceConfig.vue';
-import ECCEConfigVue from './components/ECCEConfig.vue';
 import TalkModeVue from './components/TalkMode.vue';
 import ChatHistory from './components/ChatHistory.vue';
+import ChatbotConfig from './components/ChatbotConfig.vue';
 
 /**
  * Mounted
@@ -71,6 +71,9 @@ const saveConfig = () => {
   }
 }
 
+const loadDefaultConfig = () => {
+  config.value = { ...initialConfig };
+}
 
 </script>
 
@@ -84,7 +87,7 @@ const saveConfig = () => {
           <v-container>
             <v-tabs v-model="configTab">
               <v-tab>音声合成エンジン設定</v-tab>
-              <v-tab>ECCE設定</v-tab>
+              <v-tab>チャットボットAPI設定</v-tab>
               <v-tab>入力テキスト置き換え設定</v-tab>
               <v-tab>出力テキスト置き換え設定</v-tab>
             </v-tabs>
@@ -95,10 +98,9 @@ const saveConfig = () => {
               <voice-gen-config-vue v-model="config" @notify="(val) => {showErr(val.err, val.text, val.color)}">
               </voice-gen-config-vue>
             </v-window-item>
-            <!-- ECCE設定タブ -->
+            <!-- チャットボットAPI設定タブ -->
             <v-window-item>
-              <e-c-c-e-config-vue v-model="config" @notify="(val) => {showErr(val.err, val.text, val.color)}">
-              </e-c-c-e-config-vue>
+              <chatbot-config v-model="config" @notify="(val) => {showErr(val.err, val.text, val.color)}"></chatbot-config>
             </v-window-item>
             <!-- 入力テキスト設定タブ -->
             <v-window-item>
@@ -119,7 +121,8 @@ const saveConfig = () => {
           </v-window>
           <v-footer style="position: fixed; bottom: 0; width: 100%;">
             <v-spacer></v-spacer>
-            <v-btn @click="saveConfig" variant="text">コンフィグファイルを上書き</v-btn>
+            <v-btn @click="loadDefaultConfig" variant="outlined" class="mx-2" color="warning">コンフィグのデフォルト値をロード</v-btn>
+            <v-btn @click="saveConfig" variant="outlined" class="mx-2" color="info">コンフィグファイルを上書き</v-btn>
           </v-footer>
         </v-window-item>
         <!-- おしゃべりタブ -->

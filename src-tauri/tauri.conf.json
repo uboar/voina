@@ -7,8 +7,8 @@
     "withGlobalTauri": false
   },
   "package": {
-    "productName": "voecce",
-    "version": "0.1.0"
+    "productName": "voina",
+    "version": "0.2.0"
   },
   "tauri": {
     "allowlist": {
@@ -56,7 +56,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "voecce",
+      "identifier": "voina",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
@@ -85,7 +85,7 @@
         "fullscreen": false,
         "height": 720,
         "resizable": true,
-        "title": "voecce",
+        "title": "voina",
         "width": 1280
       }
     ]

@@ -118,6 +118,8 @@ const tamiyasuTestSpeak = async function () {
 
 <template>
   <v-container>
+    <h1>音声合成エンジン設定</h1>
+    <v-divider class="mb-4"></v-divider>
     <v-select label="音声合成エンジンを選択" v-model="currentConfig.engine" :items="engines" item-title="text"
       item-value="value"></v-select>
     <v-divider class="mb-4"></v-divider>

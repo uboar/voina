@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ReplaceText, Config } from '../scripts/interfaces';
+import { Config } from '../scripts/configLoader';
 import { ref } from 'vue';
 import { computed } from '@vue/reactivity';
 import replaceText from '../scripts/replaceText';
-import { getECCE, insertHistory, deleteHisory } from '../scripts/ecce';
+import { getECCE, insertHistory as insertHistoryECCE, deleteHisory as deleteHisoryECCE } from '../scripts/ecce';
+import { getCCE } from '../scripts/cce';
 import { voicevoxSend } from '../scripts/voicevox'
 import { tamiyasuSend } from '../scripts/tamiyasu';
+import { getAMP, deleteHistory as deleteHisoryAMP } from '../scripts/amp';
 
 /**
  * Props
@@ -62,11 +64,31 @@ const autoSend = ref(true);
 const autoDeleteQuery = ref(true);
 //会話ロギング無効
 const disbleInsertHistory = ref(false);
+//追加ディレイの時間
+const additionalDelay = ref(1000);
 
 /**
  * Methods
  * -----------------------------------------------------------------------------------------
  */
+
+const sendQueryECCE = async (query: string) => {
+    const responseECCE = await getECCE(query, props.config.ecce);
+    console.log(responseECCE);
+
+    //TODO : resultResponseText以外で帰ってきた返答候補を選択出来るようにする
+    responseECCEText.value = responseECCE.resultResponseText;
+    if (!disbleInsertHistory.value) {
+        insertHistoryECCE(query, responseECCEText.value);
+    }
+}
+
+const sendQueryAMP = async (query: string) => {
+    const responceAMP = await getAMP(query, props.config.aiModelPlayGround);
+    console.log(responceAMP);
+
+    responseECCEText.value = responceAMP.Response;
+}
 
 /**
  * クエリを送付
@@ -75,14 +97,18 @@ const disbleInsertHistory = ref(false);
 const sendQuery = async (query: string) => {
     waiting.value = true;
     try {
-        const responseECCE = await getECCE(query, props.config.ecce);
-        console.log(responseECCE);
-
-        //TODO : resultResponseText以外で帰ってきた返答候補を選択出来るようにする
-        responseECCEText.value = responseECCE.resultResponseText;
-        if (!disbleInsertHistory.value) {
-            insertHistory(query, responseECCEText.value);
+        switch (props.config.chatApi) {
+            case "aiModelPlayground":
+                await sendQueryAMP(query);
+                break;
+            case "ecce":
+                await sendQueryECCE(query);
+                break;
+            case "cce":
+                responseECCEText.value = (await getCCE(query, props.config.cce)).answer;
+                break;
         }
+        if (autoDeleteQuery.value) queryText.value = "";
         switch (props.config.engine) {
             case "voicevox":
                 await voicevoxSend(responseECCEReplaced.value, props.config.voicevox);
@@ -91,12 +117,12 @@ const sendQuery = async (query: string) => {
                 tamiyasuSend(responseECCEReplaced.value, props.config.tamiyasu.argument)
                 break;
         }
-        if (autoDeleteQuery.value) queryText.value = "";
     } catch (err) {
         console.error(err);
         emits("notify", { err: err, color: "error", text: "エラーが発生しました : " })
     }
-    waiting.value = false;
+
+    window.setTimeout(() => waiting.value = false, additionalDelay.value);
 }
 
 /**
@@ -150,7 +176,8 @@ const stopSpeech = () => {
  * 
  */
 const deleteTalkHistory = () => {
-    deleteHisory();
+    deleteHisoryECCE();
+    deleteHisoryAMP();
     emits("notify", { color: "warning", text: "会話履歴を削除しました。" });
 };
 
@@ -160,14 +187,16 @@ const deleteTalkHistory = () => {
     <v-container>
         <h1>おしゃべりする</h1>
         <v-divider></v-divider>
-        <v-textarea class="mt-4" color="primary" variant="solo" :rows="(compactView) ? 2 : 7" no-resize label="送信テキスト" :disabled="waiting"
-            v-model="queryText">
+        <v-textarea class="mt-4" color="primary" variant="solo" :rows="(compactView) ? 2 : 7" no-resize label="送信テキスト"
+            :disabled="waiting" v-model="queryText">
         </v-textarea>
-        <v-textarea disabled readonly no-resize rows="2" label="送信テキスト(置換後)" v-if="!compactView" v-model="queryReplaced">
+        <v-textarea disabled readonly no-resize rows="2" label="送信テキスト(置換後)" v-if="!compactView"
+            v-model="queryReplaced">
         </v-textarea>
         <v-divider class="my-2"></v-divider>
-        <v-text-field v-model="responseECCEReplaced" readonly label="ECCEからの返答" variant="outlined"></v-text-field>
-        <v-text-field v-model="responseECCEText" density="compact" disabled label="ECCEからの返答(置換前)" v-if="!compactView" variant="outlined">
+        <v-text-field v-model="responseECCEReplaced" readonly label="チャットボットAPIからの返答" variant="outlined"></v-text-field>
+        <v-text-field v-model="responseECCEText" density="compact" disabled label="チャットボットAPIからの返答(置換前)"
+            v-if="!compactView" variant="outlined">
         </v-text-field>
         <v-divider class="my-2"></v-divider>
         <v-btn block size="x-large" color="cyan" @click="sendQuery(queryReplaced)" :disabled="waiting">
@@ -189,17 +218,19 @@ const deleteTalkHistory = () => {
                     <v-col>
                         <v-checkbox v-model="autoSend" density="compact" class="my-n4" label="音声認識した結果を自動送信する">
                         </v-checkbox>
-                        <v-checkbox v-model="disbleInsertHistory" density="compact" class="my-n4" label="会話履歴に返答を追加しない">
+                        <v-checkbox v-model="disbleInsertHistory" density="compact" class="my-n4"
+                            label="会話履歴に返答を追加しない(ECCEのみ)">
                         </v-checkbox>
                         <v-checkbox v-model="autoDeleteQuery" density="compact" class="my-n4" label="送信テキストを自動で削除">
                         </v-checkbox>
                     </v-col>
                     <v-col>
-                        <v-btn variant="outlined" color="warning" @click="deleteTalkHistory" block>会話履歴をクリア</v-btn>
-                        <v-switch v-model="compactView" color="primary" label="表示を減らす">
-                        </v-switch>
+                <v-btn variant="outlined" color="warning" @click="deleteTalkHistory" block class="mb-4">会話履歴をクリア</v-btn>
+                        <v-text-field v-model.number="additionalDelay" type="number" label="追加遅延時間(ミリ秒)" variant="outlined" density="compact"></v-text-field>
                     </v-col>
                 </v-row>
+                <v-switch v-model="compactView" color="primary" label="表示を減らす">
+                </v-switch>
             </v-card-text>
         </v-card>
     </v-container>

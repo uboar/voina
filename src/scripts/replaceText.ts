@@ -1,5 +1,9 @@
 
-import { ReplaceText } from "./interfaces"
+//置き換えテキスト
+export interface ReplaceText {
+    before: string
+    after: string
+}
 
 /**
  * テキストの置き換え
